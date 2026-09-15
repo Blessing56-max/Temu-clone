@@ -1,0 +1,34 @@
+# Java
+backend/target/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*
+backend/src/main/resources/application-dev.yml
+backend/src/main/resources/application-prod.yml
+*.log
+
+# Node (frontend later)
+node_modules/
+frontend/dist/
+
+# Test output
+backend/target/surefire-reports/
+backend/target/failsafe-reports/

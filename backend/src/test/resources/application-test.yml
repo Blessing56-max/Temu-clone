@@ -1,0 +1,29 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+  mail:
+    host: localhost
+    port: 3025
+    username: test
+    password: test
+
+jwt:
+  secret: test-secret-must-be-at-least-512-bits-long-for-hs512-signing-algorithm-abcdefghijklmnop
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+stripe:
+  api-key: sk_test_placeholder
+
+logging:
+  level:
+    root: WARN
+    com.kora: INFO
+    org.testcontainers: WARN
+    com.github.dockerjava: WARN
