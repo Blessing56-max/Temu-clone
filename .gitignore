@@ -32,5 +32,4 @@ node_modules/
 backend/target/surefire-reports/
 backend/target/failsafe-reports/
 # Frontend lives in its own repo
-frontend-dump.txt
 
