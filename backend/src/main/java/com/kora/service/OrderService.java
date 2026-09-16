@@ -106,6 +106,18 @@ public class OrderService {
                 "Your order #" + order.getId() + " has been placed. Estimated delivery: " + order.getEstimatedDelivery(),
                 "/orders/" + order.getId());
 
+        // Notify every seller whose product is in this order
+        java.util.Set<Long> notifiedSellers = new java.util.HashSet<>();
+        for (OrderItem item : order.getItems()) {
+            Long sellerId = item.getSeller().getId();
+            if (notifiedSellers.add(sellerId)) {
+                notificationService.notify(item.getSeller(), "NEW_ORDER",
+                        "New order received",
+                        "You have a new order #" + order.getId() + " for " + item.getProductName() + ". Please prepare for shipment.",
+                        "/vendor/dashboard/orders");
+            }
+        }
+
         // Clear cart
         cartService.clearCart(email);
 

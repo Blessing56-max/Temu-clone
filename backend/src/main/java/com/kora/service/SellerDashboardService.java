@@ -1,5 +1,6 @@
 package com.kora.service;
 
+import com.kora.dto.response.OrderResponse;
 import com.kora.dto.response.SellerDashboardResponse;
 import com.kora.dto.response.SellerDashboardResponse.MonthlyRevenue;
 import com.kora.dto.response.SellerDashboardResponse.ProductStat;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,8 @@ public class SellerDashboardService {
     private final OrderItemRepository orderItemRepository;
     private final ProductViewRepository productViewRepository;
     private final ReviewRepository reviewRepository;
+    private final OrderRepository orderRepository;
+    private final OrderService orderService;
 
     @Transactional(readOnly = true)
     public SellerDashboardResponse getDashboard(String email) {
@@ -42,7 +45,6 @@ public class SellerDashboardService {
                 .mapToLong(p -> reviewRepository.countByProductId(p.getId()))
                 .sum();
 
-        // Average rating across all seller products
         List<Long> productIds = productRepository.findBySellerId(sellerId, PageRequest.of(0, 1000))
                 .getContent().stream().map(p -> p.getId()).toList();
 
@@ -57,7 +59,6 @@ public class SellerDashboardService {
             if (count > 0) averageRating = Math.round((sum / count) * 10.0) / 10.0;
         }
 
-        // Top selling (limit 5)
         List<Object[]> topSellingRaw = orderItemRepository.topSellingBySeller(sellerId, PageRequest.of(0, 5));
         List<ProductStat> topSelling = topSellingRaw.stream()
                 .map(r -> {
@@ -70,7 +71,6 @@ public class SellerDashboardService {
                 })
                 .toList();
 
-        // Top viewed (limit 5)
         List<Object[]> topViewedRaw = productViewRepository.topViewedBySeller(sellerId);
         List<ProductStat> topViewed = topViewedRaw.stream()
                 .limit(5)
@@ -82,7 +82,6 @@ public class SellerDashboardService {
                 })
                 .toList();
 
-        // Monthly revenue
         List<Object[]> monthlyRaw = orderItemRepository.monthlyRevenueBySeller(sellerId);
         List<MonthlyRevenue> monthly = monthlyRaw.stream()
                 .map(r -> new MonthlyRevenue((String) r[0], (BigDecimal) r[1]))
@@ -100,5 +99,12 @@ public class SellerDashboardService {
                 topSelling,
                 topViewed,
                 monthly);
+    }
+
+    @Transactional(readOnly = true)
+    public long countPendingOrders(String email) {
+        User seller = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "User not found"));
+        return orderItemRepository.countPendingFulfilmentBySeller(seller.getId());
     }
 }

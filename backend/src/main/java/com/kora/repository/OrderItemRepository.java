@@ -22,7 +22,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     boolean userHasPurchasedDelivered(@Param("userId") Long userId,
                                       @Param("productId") Long productId);
 
-    // Total revenue for seller (only PAID onwards)
     @Query("""
         SELECT COALESCE(SUM(oi.lineTotal), 0)
         FROM OrderItem oi
@@ -31,7 +30,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     """)
     BigDecimal totalRevenueBySeller(@Param("sellerId") Long sellerId);
 
-    // Count distinct orders for seller
     @Query("""
         SELECT COUNT(DISTINCT oi.order.id)
         FROM OrderItem oi
@@ -40,7 +38,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     """)
     long totalOrdersBySeller(@Param("sellerId") Long sellerId);
 
-    // Count total units sold
     @Query("""
         SELECT COALESCE(SUM(oi.quantity), 0)
         FROM OrderItem oi
@@ -49,7 +46,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     """)
     long totalUnitsSoldBySeller(@Param("sellerId") Long sellerId);
 
-    // Top selling products (by units)
     @Query("""
         SELECT oi.product.id, oi.productName, SUM(oi.quantity), SUM(oi.lineTotal)
         FROM OrderItem oi
@@ -60,7 +56,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
         """)
     List<Object[]> topSellingBySeller(@Param("sellerId") Long sellerId, Pageable pageable);
 
-    // Monthly revenue (last 6 months)
     @Query(value = """
         SELECT TO_CHAR(oi.order_id_created_month, 'YYYY-MM') AS month,
                SUM(oi.line_total) AS revenue
@@ -76,4 +71,21 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
         ORDER BY oi.order_id_created_month
         """, nativeQuery = true)
     List<Object[]> monthlyRevenueBySeller(@Param("sellerId") Long sellerId);
+
+    // NEW: distinct order IDs containing this seller's items
+    @Query("""
+        SELECT DISTINCT oi.order.id
+        FROM OrderItem oi
+        WHERE oi.seller.id = :sellerId
+        ORDER BY oi.order.id DESC
+        """)
+    List<Long> findOrderIdsBySeller(@Param("sellerId") Long sellerId, Pageable pageable);
+
+    @Query("""
+        SELECT COUNT(DISTINCT oi.order.id)
+        FROM OrderItem oi
+        WHERE oi.seller.id = :sellerId
+          AND oi.order.status IN ('PAID', 'PACKED')
+        """)
+    long countPendingFulfilmentBySeller(@Param("sellerId") Long sellerId);
 }

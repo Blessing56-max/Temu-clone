@@ -30,6 +30,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
     private final RateLimitFilter rateLimitFilter;
+
+    @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins:http://localhost:5173}")
+    private String corsAllowedOrigins;
     private final UserDetailsService userDetailsService;
 
     @Bean public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(12); }
@@ -47,7 +50,7 @@ public class SecurityConfig {
 
     @Bean public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration c = new CorsConfiguration();
-        c.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+        c.setAllowedOrigins(List.of(corsAllowedOrigins.split(",")));
         c.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         c.setAllowedHeaders(List.of("*"));
         c.setAllowCredentials(true);
