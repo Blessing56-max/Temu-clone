@@ -32,3 +32,7 @@ frontend/dist/
 # Test output
 backend/target/surefire-reports/
 backend/target/failsafe-reports/
+# Frontend lives in its own repo
+frontend/
+frontend-dump.txt
+
