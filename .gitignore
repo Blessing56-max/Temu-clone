@@ -25,11 +25,9 @@ backend/src/main/resources/application-dev.yml
 backend/src/main/resources/application-prod.yml
 *.log
 
-# Node (frontend later)
 node_modules/
 
 # Test output
 backend/target/surefire-reports/
 backend/target/failsafe-reports/
-# Frontend lives in its own repo
 
