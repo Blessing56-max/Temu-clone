@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,7 +43,7 @@ public class SellerController {
     private final OrderRepository orderRepository;
     private final NotificationService notificationService;
 
-    /** Upgrade current authenticated user to SELLER role. */
+    @Transactional
     @PostMapping("/become")
     public ResponseEntity<UserResponse> becomeSeller(Authentication auth) {
         User user = userRepository.findByEmail(auth.getName())
@@ -66,16 +67,16 @@ public class SellerController {
         return ResponseEntity.ok(userMapper.toResponse(user));
     }
 
-    /** Dashboard stats — sellers/admins only. */
     @GetMapping("/dashboard")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
+    @Transactional(readOnly = true)
     public SellerDashboardResponse dashboard(Authentication auth) {
         return dashboardService.getDashboard(auth.getName());
     }
 
-    /** Seller's own products. */
     @GetMapping("/products")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
+    @Transactional(readOnly = true)
     public Page<ProductResponse> myProducts(Authentication auth,
                                             @RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "20") int size) {
@@ -86,9 +87,9 @@ public class SellerController {
                 .map(productMapper::toResponse);
     }
 
-    /** Seller's orders (filtered to items they own). */
     @GetMapping("/orders")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
+    @Transactional(readOnly = true)
     public List<OrderResponse> myOrders(Authentication auth) {
         User seller = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "User not found"));
@@ -100,9 +101,9 @@ public class SellerController {
                 .toList();
     }
 
-    /** Count of orders needing seller action (PAID + PACKED). */
     @GetMapping("/pending-count")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
+    @Transactional(readOnly = true)
     public Map<String, Long> pendingCount(Authentication auth) {
         return Map.of("pending", dashboardService.countPendingOrders(auth.getName()));
     }

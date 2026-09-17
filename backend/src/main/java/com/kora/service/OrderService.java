@@ -114,7 +114,7 @@ public class OrderService {
                 notificationService.notify(item.getSeller(), "NEW_ORDER",
                         "New order received",
                         "You have a new order #" + order.getId() + " for " + item.getProductName() + ". Please prepare for shipment.",
-                        "/vendor/dashboard/orders");
+                        "/vendor/orders");
             }
         }
 

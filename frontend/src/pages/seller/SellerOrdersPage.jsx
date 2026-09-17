@@ -40,7 +40,7 @@ export default function SellerOrdersPage() {
     finally { setBusy(null) }
   }
 
-  const actionable = orders.filter((o) => ['PAID', 'PACKED'].includes(o.status))
+  const actionable = orders.filter((o) => ['PENDING', 'PAID', 'PACKED'].includes(o.status))
   const inTransit = orders.filter((o) => ['SHIPPED', 'OUT_FOR_DELIVERY'].includes(o.status))
   const done = orders.filter((o) => ['DELIVERED', 'CANCELLED'].includes(o.status))
 

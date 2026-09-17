@@ -26,6 +26,7 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public ReviewResponse create(String email, ReviewRequest req) {
@@ -52,7 +53,20 @@ public class ReviewService {
                 .comment(req.comment())
                 .build();
 
-        return toResponse(reviewRepository.save(review));
+        Review saved = reviewRepository.save(review);
+
+        // Notify the seller that their product got a review
+        if (product.getSeller() != null && !product.getSeller().getId().equals(user.getId())) {
+            notificationService.notify(product.getSeller(), "REVIEW_POSTED",
+                    "New review on " + product.getName(),
+                    user.getFullName() + " rated your product " + req.rating() + "/5" +
+                            (req.comment() != null && !req.comment().isBlank()
+                                    ? ": \"" + (req.comment().length() > 80 ? req.comment().substring(0, 80) + "..." : req.comment()) + "\""
+                                    : "."),
+                    "/products/" + product.getId());
+        }
+
+        return toResponse(saved);
     }
 
     @Transactional(readOnly = true)
