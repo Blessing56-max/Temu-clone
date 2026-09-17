@@ -15,7 +15,7 @@ import {
   addToWishlistApi,
   recordProductView,
 } from '@/store/slices/catalogSlice'
-import { api } from '@/lib/api'
+import { api, resolveImageUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 export default function ProductDetailPage() {
@@ -131,7 +131,7 @@ export default function ProductDetailPage() {
               className="aspect-square rounded-3xl overflow-hidden bg-white border border-onLight/10"
             >
               {currentImage ? (
-                <img src={currentImage.url} alt={product.name} className="w-full h-full object-cover" />
+                <img src={resolveImageUrl(currentImage.url)} alt={product.name} className="w-full h-full object-cover" />
               ) : (
                 <ProductThumb product={product} iconSize={72} />
               )}
@@ -148,7 +148,7 @@ export default function ProductDetailPage() {
                       activeImg === i ? 'border-leaf' : 'border-transparent',
                     )}
                   >
-                    <img src={img.url} alt="" className="w-full h-full object-cover" />
+                    <img src={resolveImageUrl(img.url)} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

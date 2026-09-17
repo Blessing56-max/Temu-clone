@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Check, Truck, Package, ShoppingCart, Clock, MapPin } from 'lucide-react'
-import SellerLayout from '@/components/seller/SellerLayout'
+import { Link } from 'react-router-dom'
+import { Package, Truck, Check, MapPin, Clock } from 'lucide-react'
+import Navbar from '@/components/Navbar'
 import EmptyState from '@/components/ui/EmptyState'
 import { api, resolveImageUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -15,91 +16,102 @@ const STATUS_COLORS = {
   CANCELLED: 'bg-coral/15 text-coral',
 }
 
-export default function SellerOrdersPage() {
+const FILTERS = [
+  { id: 'transit', label: 'In transit', statuses: ['SHIPPED', 'OUT_FOR_DELIVERY'] },
+  { id: 'delivered', label: 'Delivered', statuses: ['DELIVERED'] },
+  { id: 'all', label: 'All orders', statuses: null },
+]
+
+export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([])
-  const [filter, setFilter] = useState('action')
+  const [filter, setFilter] = useState('transit')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(null)
 
   async function load() {
     try {
-      const r = await api.get('/seller/orders')
-      setOrders(r)
+      const r = await api.get('/orders?size=100')
+      setOrders(r.content || [])
     } catch (e) { console.error(e) }
     finally { setLoading(false) }
   }
 
   useEffect(() => { load() }, [])
 
-  async function updateStatus(orderId, status, note) {
+  async function updateStatus(orderId, status) {
     setBusy(orderId)
     try {
-      await api.put(`/orders/${orderId}/status`, { status, note: note || null })
+      await api.put('/orders/' + orderId + '/status', { status, note: null })
       await load()
     } catch (e) { alert(e.message) }
     finally { setBusy(null) }
   }
 
-  const actionable = orders.filter((o) => ['PENDING', 'PAID', 'PACKED'].includes(o.status))
-  const inTransit = orders.filter((o) => ['SHIPPED', 'OUT_FOR_DELIVERY'].includes(o.status))
-  const done = orders.filter((o) => ['DELIVERED', 'CANCELLED'].includes(o.status))
+  const filterDef = FILTERS.find(f => f.id === filter)
+  const shown = filterDef.statuses
+    ? orders.filter(o => filterDef.statuses.includes(o.status))
+    : orders
 
-  const lists = { action: actionable, transit: inTransit, done }
-  const shown = lists[filter] || []
+  const counts = {
+    transit: orders.filter(o => ['SHIPPED', 'OUT_FOR_DELIVERY'].includes(o.status)).length,
+    delivered: orders.filter(o => o.status === 'DELIVERED').length,
+    all: orders.length,
+  }
 
   return (
-    <SellerLayout>
-      <div className="mb-8">
-        <h1 className="font-display text-3xl font-semibold">Orders</h1>
-        <p className="text-sm text-onLight/50 mt-1">
-          Update status so buyers see where their package is.
-        </p>
-      </div>
+    <div className="min-h-screen bg-paper">
+      <Navbar />
+      <div className="container-page py-10 max-w-5xl">
+        <Link to="/admin" className="text-xs text-onLight/40 hover:text-leaf-dim">
+          &larr; Back to admin console
+        </Link>
+        <div className="mt-6 mb-8">
+          <h1 className="font-display text-3xl font-semibold">Order fulfillment</h1>
+          <p className="text-sm text-onLight/50 mt-1">
+            Move shipped orders through delivery. Buyers get notified automatically.
+          </p>
+        </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-2 mb-6">
-        {[
-          { id: 'action', label: 'Need action', count: actionable.length },
-          { id: 'transit', label: 'In transit', count: inTransit.length },
-          { id: 'done', label: 'Completed', count: done.length },
-        ].map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setFilter(t.id)}
-            className={cn(
-              'text-xs font-medium rounded-full px-4 py-2 transition-colors flex items-center gap-2',
-              filter === t.id ? 'bg-ink text-onDark' : 'bg-onLight/5 text-onLight/60 hover:bg-onLight/10',
-            )}
-          >
-            {t.label}
-            {t.count > 0 && (
-              <span className={cn(
-                'text-[10px] rounded-full px-1.5 min-w-[18px] h-[16px] flex items-center justify-center',
-                filter === t.id ? 'bg-white/20' : 'bg-onLight/10',
-              )}>
-                {t.count}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="text-center py-20 text-onLight/50">Loading orders...</div>
-      ) : shown.length === 0 ? (
-        <EmptyState
-          icon={filter === 'action' ? Check : ShoppingCart}
-          title={filter === 'action' ? 'All caught up' : 'No orders here'}
-          description={filter === 'action' ? 'No orders are waiting on you.' : 'Orders will appear here.'}
-        />
-      ) : (
-        <div className="flex flex-col gap-4">
-          {shown.map((o) => (
-            <OrderCard key={o.id} order={o} onAction={updateStatus} busy={busy === o.id} />
+        <div className="flex gap-2 mb-6">
+          {FILTERS.map(f => (
+            <button
+              key={f.id}
+              onClick={() => setFilter(f.id)}
+              className={cn(
+                'text-xs font-medium rounded-full px-4 py-2 transition-colors flex items-center gap-2',
+                filter === f.id ? 'bg-ink text-onDark' : 'bg-onLight/5 text-onLight/60 hover:bg-onLight/10',
+              )}
+            >
+              {f.label}
+              {counts[f.id] > 0 && (
+                <span className={cn(
+                  'text-[10px] rounded-full px-1.5 min-w-[18px] h-[16px] flex items-center justify-center',
+                  filter === f.id ? 'bg-white/20' : 'bg-onLight/10',
+                )}>
+                  {counts[f.id]}
+                </span>
+              )}
+            </button>
           ))}
         </div>
-      )}
-    </SellerLayout>
+
+        {loading ? (
+          <div className="text-center py-20 text-onLight/50">Loading orders...</div>
+        ) : shown.length === 0 ? (
+          <EmptyState
+            icon={Package}
+            title={filter === 'transit' ? 'No orders in transit' : 'No orders here'}
+            description={filter === 'transit' ? 'Orders marked shipped by sellers appear here.' : 'Nothing to show.'}
+          />
+        ) : (
+          <div className="flex flex-col gap-4">
+            {shown.map(o => (
+              <OrderCard key={o.id} order={o} onAction={updateStatus} busy={busy === o.id} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -120,9 +132,8 @@ function OrderCard({ order, onAction, busy }) {
 
       <div className="p-5">
         <div className="grid md:grid-cols-[1fr_220px] gap-5">
-          {/* Items */}
           <div className="space-y-3">
-            {order.items.map((it) => (
+            {order.items.map(it => (
               <div key={it.id} className="flex gap-3 items-center">
                 <div className="size-14 rounded-xl overflow-hidden bg-paper shrink-0">
                   {it.imageUrl && <img src={resolveImageUrl(it.imageUrl)} alt="" className="w-full h-full object-cover" />}
@@ -130,7 +141,7 @@ function OrderCard({ order, onAction, busy }) {
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm truncate">{it.productName}</div>
                   <div className="text-xs text-onLight/45 mt-0.5">
-                    &#8358;{Number(it.unitPrice).toLocaleString()} × {it.quantity}
+                    &#8358;{Number(it.unitPrice).toLocaleString()} &times; {it.quantity} &middot; Sold by {it.sellerName}
                   </div>
                 </div>
                 <div className="text-sm font-medium shrink-0">
@@ -140,7 +151,6 @@ function OrderCard({ order, onAction, busy }) {
             ))}
           </div>
 
-          {/* Delivery info */}
           <div className="bg-paper rounded-xl p-4 text-xs">
             <div className="flex items-start gap-2 mb-2">
               <MapPin size={13} className="text-leaf mt-0.5 shrink-0" />
@@ -159,35 +169,38 @@ function OrderCard({ order, onAction, busy }) {
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex flex-wrap gap-2 mt-5 pt-4 border-t border-onLight/8">
-          {order.status === 'PAID' && (
-            <ActionButton
-              icon={Package}
-              label="Mark as packed"
-              onClick={() => onAction(order.id, 'PACKED', 'Packed by seller, ready for pickup')}
-              variant="leaf"
-              busy={busy}
-            />
-          )}
-          {order.status === 'PACKED' && (
+          {order.status === 'SHIPPED' && (
             <ActionButton
               icon={Truck}
-              label="Mark as shipped"
-              onClick={() => onAction(order.id, 'SHIPPED', 'Handed to courier for delivery')}
+              label="Mark out for delivery"
+              onClick={() => onAction(order.id, 'OUT_FOR_DELIVERY')}
               variant="canopy"
               busy={busy}
             />
           )}
-          {['SHIPPED', 'OUT_FOR_DELIVERY'].includes(order.status) && (
-            <div className="text-xs text-onLight/50 flex items-center gap-1.5">
-              <Truck size={13} className="text-canopy" />
-              Package in transit — admin will mark delivered
-            </div>
+          {order.status === 'OUT_FOR_DELIVERY' && (
+            <ActionButton
+              icon={Check}
+              label="Mark delivered"
+              onClick={() => onAction(order.id, 'DELIVERED')}
+              variant="emerald"
+              busy={busy}
+            />
           )}
           {order.status === 'DELIVERED' && (
             <div className="text-xs text-emerald flex items-center gap-1.5">
-              <Check size={13} /> Delivered · buyer can now review
+              <Check size={13} /> Delivered
+            </div>
+          )}
+          {order.status === 'CANCELLED' && (
+            <div className="text-xs text-coral flex items-center gap-1.5">
+              Order was cancelled
+            </div>
+          )}
+          {['PENDING', 'PAID', 'PACKED'].includes(order.status) && (
+            <div className="text-xs text-onLight/50 flex items-center gap-1.5">
+              Waiting on seller to mark shipped
             </div>
           )}
         </div>
@@ -198,8 +211,8 @@ function OrderCard({ order, onAction, busy }) {
 
 function ActionButton({ icon: Icon, label, onClick, variant, busy }) {
   const styles = {
-    leaf: 'bg-leaf text-onDark hover:bg-leaf-dim',
     canopy: 'bg-canopy text-white hover:opacity-90',
+    emerald: 'bg-emerald text-white hover:opacity-90',
   }
   return (
     <button

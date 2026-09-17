@@ -1,13 +1,23 @@
 import { useEffect } from 'react'
+import { resolveImageUrl } from '@/lib/api'
 import { Link, useNavigate } from 'react-router-dom'
+import { resolveImageUrl } from '@/lib/api'
 import { useSelector, useDispatch } from 'react-redux'
+import { resolveImageUrl } from '@/lib/api'
 import { motion } from 'framer-motion'
+import { resolveImageUrl } from '@/lib/api'
 import { Trash2, ShoppingBag, Minus, Plus } from 'lucide-react'
+import { resolveImageUrl } from '@/lib/api'
 import Navbar from '@/components/Navbar'
+import { resolveImageUrl } from '@/lib/api'
 import Footer from '@/components/Footer'
+import { resolveImageUrl } from '@/lib/api'
 import Button from '@/components/ui/Button'
+import { resolveImageUrl } from '@/lib/api'
 import { fetchCart, updateCartItemApi, removeCartItemApi } from '@/store/slices/catalogSlice'
+import { resolveImageUrl } from '@/lib/api'
 import EmptyState from '@/components/ui/EmptyState'
+import { resolveImageUrl } from '@/lib/api'
 
 export default function CartPage() {
   const dispatch = useDispatch()
@@ -68,7 +78,7 @@ export default function CartPage() {
                 >
                   <Link to={`/products/${item.productId}`} className="size-24 rounded-xl overflow-hidden shrink-0 bg-paper">
                     {item.imageUrl
-                      ? <img src={item.imageUrl} alt={item.productName} className="w-full h-full object-cover" />
+                      ? <img src={resolveImageUrl(item.imageUrl)} alt={item.productName} className="w-full h-full object-cover" />
                       : <div className="w-full h-full bg-onLight/5" />}
                   </Link>
                   <div className="flex-1 min-w-0">

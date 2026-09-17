@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Users, Package, ShoppingCart, DollarSign, Star, Eye,
-  ShieldBan, ShieldCheck, Crown, Search, Activity
+  ShieldBan, ShieldCheck, Crown, Search, Activity, Truck
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import { api } from '@/lib/api'
@@ -71,6 +72,13 @@ export default function AdminDashboard() {
           <h1 className="font-display text-3xl font-semibold">Admin Console</h1>
           <p className="text-sm text-onLight/50 mt-1">Platform oversight and moderation</p>
         </div>
+
+        <Link
+          to="/admin/orders"
+          className="inline-flex items-center gap-2 mb-8 text-sm font-medium bg-canopy text-white rounded-full px-5 py-2.5 hover:opacity-90 transition-opacity"
+        >
+          <Truck size={15} /> Manage order fulfillment
+        </Link>
 
         {/* Stat grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">

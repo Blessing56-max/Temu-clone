@@ -8,7 +8,7 @@ import Footer from '@/components/Footer'
 import Button from '@/components/ui/Button'
 import EmptyState from '@/components/ui/EmptyState'
 import { fetchWishlist, removeWishlistItemApi } from '@/store/slices/catalogSlice'
-import { api } from '@/lib/api'
+import { api, resolveImageUrl } from '@/lib/api'
 
 export default function WishlistPage() {
   const dispatch = useDispatch()
@@ -107,7 +107,7 @@ export default function WishlistPage() {
                       <Link to={`/products/${it.productId}`} className="block aspect-square bg-paper overflow-hidden">
                         {it.imageUrl ? (
                           <img
-                            src={it.imageUrl}
+                            src={resolveImageUrl(it.imageUrl)}
                             alt={it.productName}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />

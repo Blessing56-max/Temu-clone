@@ -9,6 +9,7 @@ const Login = lazy(() => import('./features/auth/pages/Login'))
 const RegistrationForm = lazy(() => import('./features/auth/pages/RegistrationForm'))
 const CustomerDashboard = lazy(() => import('./pages/CustomerDashboard'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
+const AdminOrdersPage = lazy(() => import('./pages/AdminOrdersPage'))
 const ProfileCustomization = lazy(() => import('./pages/ProfileCustomization'))
 const ProductsBrowse = lazy(() => import('./pages/ProductsBrowse'))
 const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'))
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/register" element={<RegistrationForm />} />
           <Route path="/customer/dashboard" element={<CustomerDashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/orders" element={<AdminOrdersPage />} />
           <Route path="/profile" element={<ProfileCustomization />} />
           <Route path="/products" element={<ProductsBrowse />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />

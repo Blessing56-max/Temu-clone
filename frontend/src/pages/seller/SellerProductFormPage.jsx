@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Plus, X, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, Upload, X, Loader2 } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import SellerLayout from '@/components/seller/SellerLayout'
 import Button from '@/components/ui/Button'
@@ -9,24 +9,28 @@ import { api } from '@/lib/api'
 import { fetchCategories } from '@/store/slices/catalogSlice'
 import ProductThumb from '@/components/ProductThumb'
 
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api$/, '')
+
+function absoluteUrl(u) {
+  if (!u) return u
+  if (u.startsWith('http://') || u.startsWith('https://')) return u
+  return API_BASE + u
+}
+
 export default function SellerProductFormPage() {
   const { id } = useParams()
   const isEdit = Boolean(id)
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const categories = useSelector((s) => s.catalog.categories)
+  const fileInputRef = useRef(null)
 
   const [form, setForm] = useState({
-    name: '',
-    description: '',
-    price: '',
-    discountPrice: '',
-    stock: '',
-    categoryId: '',
-    active: true,
+    name: '', description: '', price: '', discountPrice: '',
+    stock: '', categoryId: '', active: true,
   })
   const [images, setImages] = useState([])
-  const [newImage, setNewImage] = useState('')
+  const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(isEdit)
@@ -37,15 +41,11 @@ export default function SellerProductFormPage() {
 
   useEffect(() => {
     if (!isEdit) return
-    api.get(`/products/${id}`).then((p) => {
+    api.get('/products/' + id).then((p) => {
       setForm({
-        name: p.name || '',
-        description: p.description || '',
-        price: p.price || '',
-        discountPrice: p.discountPrice || '',
-        stock: p.stock || '',
-        categoryId: p.categoryId || '',
-        active: p.active,
+        name: p.name || '', description: p.description || '',
+        price: p.price || '', discountPrice: p.discountPrice || '',
+        stock: p.stock || '', categoryId: p.categoryId || '', active: p.active,
       })
       setImages((p.images || []).map((i) => i.url))
       setLoading(false)
@@ -54,10 +54,35 @@ export default function SellerProductFormPage() {
 
   function update(k, v) { setForm((f) => ({ ...f, [k]: v })) }
 
-  function addImage() {
-    if (!newImage.trim()) return
-    setImages((arr) => [...arr, newImage.trim()])
-    setNewImage('')
+  async function handleFiles(files) {
+    if (!files || files.length === 0) return
+    setUploading(true)
+    setError(null)
+    try {
+      const uploaded = []
+      for (const file of files) {
+        const fd = new FormData()
+        fd.append('file', file)
+        const token = localStorage.getItem('kora_access_token') || sessionStorage.getItem('kora_access_token')
+        const res = await fetch(API_BASE + '/api/uploads/product-image', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+          body: fd,
+        })
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          throw new Error(body.detail || 'Upload failed')
+        }
+        const data = await res.json()
+        uploaded.push(data.url)
+      }
+      setImages((arr) => [...arr, ...uploaded])
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
   }
 
   function removeImage(url) {
@@ -82,7 +107,7 @@ export default function SellerProductFormPage() {
       active: form.active,
     }
     try {
-      if (isEdit) await api.put(`/products/${id}`, payload)
+      if (isEdit) await api.put('/products/' + id, payload)
       else await api.post('/products', payload)
       navigate('/vendor/products')
     } catch (e) {
@@ -93,19 +118,13 @@ export default function SellerProductFormPage() {
   }
 
   const previewProduct = {
-    name: form.name,
-    price: form.price,
-    discountPrice: form.discountPrice,
+    name: form.name, price: form.price, discountPrice: form.discountPrice,
     categoryName: categories.find((c) => String(c.id) === String(form.categoryId))?.name,
     images: images.map((url, i) => ({ url, position: i })),
   }
 
   if (loading) {
-    return (
-      <SellerLayout>
-        <div className="text-center py-20 text-onLight/50">Loading...</div>
-      </SellerLayout>
-    )
+    return <SellerLayout><div className="text-center py-20 text-onLight/50">Loading...</div></SellerLayout>
   }
 
   return (
@@ -135,10 +154,10 @@ export default function SellerProductFormPage() {
             </Field>
 
             <div className="grid sm:grid-cols-2 gap-5">
-              <Field label="Price (₦)">
+              <Field label="Price (NGN)">
                 <Input type="number" value={form.price} onChange={(e) => update('price', e.target.value)} placeholder="45000" />
               </Field>
-              <Field label="Discount price (₦)" hint="Leave blank if no discount">
+              <Field label="Discount price (NGN)" hint="Leave blank if no discount">
                 <Input type="number" value={form.discountPrice} onChange={(e) => update('discountPrice', e.target.value)} placeholder="38000" />
               </Field>
             </div>
@@ -149,35 +168,54 @@ export default function SellerProductFormPage() {
               </Field>
               <Field label="Category">
                 <Select value={form.categoryId} onChange={(e) => update('categoryId', e.target.value)}>
-                  <option value="">— No category —</option>
+                  <option value="">No category</option>
                   {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </Select>
               </Field>
             </div>
 
-            {/* Images */}
+            {/* Image upload */}
             <div>
               <label className="block text-sm font-medium text-onLight/80 mb-2">Product images</label>
-              <div className="flex gap-2">
-                <Input
-                  value={newImage}
-                  onChange={(e) => setNewImage(e.target.value)}
-                  placeholder="Paste image URL (unsplash, cloudinary, etc.)"
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addImage() } }}
-                />
-                <button
-                  type="button"
-                  onClick={addImage}
-                  className="shrink-0 px-4 rounded-xl bg-ink text-onDark text-sm font-medium hover:bg-canopy transition-colors flex items-center gap-1.5"
-                >
-                  <Plus size={14} /> Add
-                </button>
-              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple
+                className="hidden"
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-full border-2 border-dashed border-onLight/20 rounded-2xl py-8 flex flex-col items-center gap-3 hover:border-leaf hover:bg-leaf/5 transition-colors disabled:opacity-50"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 size={24} className="text-leaf animate-spin" />
+                    <span className="text-sm text-onLight/60">Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="size-12 rounded-full bg-leaf/10 flex items-center justify-center">
+                      <Upload size={20} className="text-leaf-dim" />
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-medium">Click to upload images</div>
+                      <div className="text-xs text-onLight/45 mt-1">JPG, PNG, WEBP, or GIF. Max 5 MB each.</div>
+                    </div>
+                  </>
+                )}
+              </button>
+
               {images.length > 0 && (
                 <div className="grid grid-cols-4 gap-3 mt-4">
                   {images.map((url, i) => (
-                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-onLight/10 group">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-onLight/10 group bg-paper">
+                      <img src={absoluteUrl(url)} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                       <button
                         type="button"
                         onClick={() => removeImage(url)}
@@ -192,12 +230,7 @@ export default function SellerProductFormPage() {
             </div>
 
             <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.active}
-                onChange={(e) => update('active', e.target.checked)}
-                className="size-4 accent-leaf"
-              />
+              <input type="checkbox" checked={form.active} onChange={(e) => update('active', e.target.checked)} className="size-4 accent-leaf" />
               <span className="text-sm">Active — visible to buyers</span>
             </label>
 
@@ -214,7 +247,6 @@ export default function SellerProductFormPage() {
           </div>
         </div>
 
-        {/* Live preview */}
         <aside className="lg:sticky lg:top-6 h-fit">
           <div className="text-xs text-onLight/45 uppercase tracking-wide mb-3">Preview</div>
           <div className="bg-white border border-onLight/10 rounded-2xl overflow-hidden">
@@ -222,20 +254,12 @@ export default function SellerProductFormPage() {
               <ProductThumb product={previewProduct} />
             </div>
             <div className="p-4">
-              <div className="font-medium text-sm line-clamp-2">
-                {form.name || 'Product name'}
-              </div>
-              <div className="text-xs text-onLight/45 mt-1">
-                {previewProduct.categoryName || 'Category'}
-              </div>
+              <div className="font-medium text-sm line-clamp-2">{form.name || 'Product name'}</div>
+              <div className="text-xs text-onLight/45 mt-1">{previewProduct.categoryName || 'Category'}</div>
               <div className="flex items-center gap-2 mt-3">
-                <span className="font-semibold">
-                  &#8358;{Number(form.discountPrice || form.price || 0).toLocaleString()}
-                </span>
+                <span className="font-semibold">NGN {Number(form.discountPrice || form.price || 0).toLocaleString()}</span>
                 {form.discountPrice && form.price && (
-                  <span className="text-xs text-onLight/35 line-through">
-                    &#8358;{Number(form.price).toLocaleString()}
-                  </span>
+                  <span className="text-xs text-onLight/35 line-through">NGN {Number(form.price).toLocaleString()}</span>
                 )}
               </div>
             </div>

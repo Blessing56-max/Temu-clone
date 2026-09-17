@@ -70,3 +70,16 @@ export const api = {
   put: (p, b) => apiFetch(p, { method: 'PUT', body: JSON.stringify(b || {}) }),
   delete: (p) => apiFetch(p, { method: 'DELETE' }),
 }
+
+// Resolve an image URL. Handles:
+// - Full http(s) URLs → passed through
+// - /uploads/xxx.jpg from our backend → prepend backend host
+// - Cloudinary public IDs → build Cloudinary URL
+const API_ORIGIN = API_URL.replace(/\/api$/, '')
+
+export function resolveImageUrl(url) {
+  if (!url) return null
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  if (url.startsWith('/')) return API_ORIGIN + url
+  return `https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,w_600/${url}`
+}

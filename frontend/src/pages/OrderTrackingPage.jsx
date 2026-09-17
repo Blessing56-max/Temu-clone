@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { Package, Check, Clock, Truck, MapPin, Home } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { api } from '@/lib/api'
+import { api, resolveImageUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const STATUS_META = {
@@ -139,7 +139,7 @@ export default function OrderTrackingPage() {
             {order.items.map((it) => (
               <div key={it.id} className="flex gap-4 items-center">
                 <div className="size-16 rounded-xl overflow-hidden bg-paper shrink-0">
-                  {it.imageUrl && <img src={it.imageUrl} alt={it.productName} className="w-full h-full object-cover" />}
+                  {it.imageUrl && <img src={resolveImageUrl(it.imageUrl)} alt={it.productName} className="w-full h-full object-cover" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm truncate">{it.productName}</div>

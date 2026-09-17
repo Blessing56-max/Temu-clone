@@ -70,6 +70,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET,
                                  "/api/products", "/api/products/**",
                                  "/api/categories", "/api/categories/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/products/*/view").permitAll()
                 .anyRequest().authenticated())
             .authenticationProvider(authProvider())

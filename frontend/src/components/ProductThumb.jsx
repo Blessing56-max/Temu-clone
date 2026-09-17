@@ -3,15 +3,28 @@ import { CATEGORY_TINTS } from '@/lib/categoryTints'
 import { discountPercent } from '@/components/PriceTag'
 import { cn } from '@/lib/utils'
 
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api$/, '')
+
 function resolveImage(product) {
+  let url = null
+
   if (product.images && product.images.length > 0) {
-    // Copy array first — Redux state is frozen, .sort() would crash
     const sorted = [...product.images].sort((a, b) => (a.position || 0) - (b.position || 0))
-    return sorted[0].url
+    url = sorted[0].url
+  } else if (product.image) {
+    url = product.image
   }
-  if (!product.image) return null
-  if (product.image.startsWith('/') || product.image.startsWith('http')) return product.image
-  return cloudinaryUrl(product.image, { width: 600, height: 600, crop: 'fill' })
+
+  if (!url) return null
+
+  // Full URLs pass through
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+
+  // Relative /uploads/xxx.jpg → prepend backend host
+  if (url.startsWith('/')) return API_BASE + url
+
+  // Otherwise treat as Cloudinary public ID
+  return cloudinaryUrl(url, { width: 600, height: 600, crop: 'fill' })
 }
 
 function computeDiscount(product) {
