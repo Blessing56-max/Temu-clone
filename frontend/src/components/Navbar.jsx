@@ -1,26 +1,36 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { ShoppingBag, User2, Heart, LogOut, LayoutDashboard, Settings } from 'lucide-react'
+import { ShoppingBag, User2, Heart, LogOut, LayoutDashboard, Settings, Search } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from './ui/Button'
 import ThemeToggle from './ThemeToggle'
 import NotificationBell from './NotificationBell'
 import { cn } from '@/lib/utils'
 import { logoutUser } from '@/features/auth/authSlice'
+import { fetchCart, fetchWishlist } from '@/store/slices/catalogSlice'
 
 const navLinks = [
   { to: '/products', label: 'Browse' },
-  { to: '/auth?intent=vendor', label: 'Sell on Kora' },
+  { to: '/sell', label: 'Sell on Kora' },
 ]
 
 export default function Navbar() {
   const dispatch = useDispatch()
   const { user, isAuthenticated } = useSelector((s) => s.auth)
   const cartCount = useSelector((s) => s.catalog.cart.totalItems || 0)
+  const wishlistCount = useSelector((s) => s.catalog.wishlist.totalItems || 0)
   const navigate = useNavigate()
   const [userMenu, setUserMenu] = useState(false)
+  const [searchInput, setSearchInput] = useState('')
   const menuRef = useRef(null)
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchCart())
+      dispatch(fetchWishlist())
+    }
+  }, [isAuthenticated, dispatch])
 
   useEffect(() => {
     function onClick(e) {
@@ -39,6 +49,13 @@ export default function Navbar() {
     user?.role === 'SELLER' ? '/vendor/dashboard' :
     '/customer/dashboard'
 
+  function handleSearch(e) {
+    if (e.key === 'Enter' && searchInput.trim()) {
+      navigate(`/products?q=${encodeURIComponent(searchInput.trim())}`)
+      setSearchInput('')
+    }
+  }
+
   async function handleLogout() {
     await dispatch(logoutUser())
     setUserMenu(false)
@@ -47,16 +64,27 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 bg-paper/95 backdrop-blur border-b border-onLight/8">
-      <nav className="container-page flex items-center justify-between h-16">
+      <nav className="container-page flex items-center justify-between h-16 gap-4">
         <Link to="/" className="flex items-center gap-2 shrink-0 group" aria-label="Kora">
           <span className="relative flex items-center justify-center">
             <span className="size-2.5 rounded-full bg-leaf transition-transform duration-300 group-hover:scale-125" />
             <span className="absolute size-2.5 rounded-full bg-leaf/40 animate-ping opacity-60 group-hover:opacity-100" />
           </span>
-          <span className="font-display font-semibold text-xl tracking-tight text-onLight">
-            Kora
-          </span>
+          <span className="font-display font-semibold text-xl tracking-tight text-onLight">Kora</span>
         </Link>
+
+        <div className="hidden md:flex flex-1 max-w-md">
+          <div className="relative w-full">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-onLight/35" />
+            <input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleSearch}
+              placeholder="Search products..."
+              className="w-full h-10 pl-9 pr-4 rounded-full bg-onLight/[0.04] border border-onLight/10 text-sm outline-none focus:border-leaf focus:bg-white transition-colors"
+            />
+          </div>
+        </div>
 
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
@@ -72,22 +100,16 @@ export default function Navbar() {
 
         <div className="flex items-center gap-1">
           <ThemeToggle />
-
-          <button
-            onClick={() => navigate('/wishlist')}
-            className="relative p-2.5 rounded-full hover:bg-onLight/5 transition-colors hidden sm:block"
-            aria-label="Wishlist"
-          >
+          <button onClick={() => navigate('/wishlist')} className="relative p-2.5 rounded-full hover:bg-onLight/5 transition-colors hidden sm:block" aria-label="Wishlist">
             <Heart size={19} className="text-onLight/70" strokeWidth={1.75} />
+            {wishlistCount > 0 && (
+              <span className="absolute top-1 right-1 bg-coral text-white text-[10px] leading-none w-4 h-4 rounded-full flex items-center justify-center font-semibold">
+                {wishlistCount > 9 ? '9+' : wishlistCount}
+              </span>
+            )}
           </button>
-
           <NotificationBell />
-
-          <button
-            onClick={() => navigate('/cart')}
-            className="relative p-2.5 rounded-full hover:bg-onLight/5 transition-colors"
-            aria-label="Cart"
-          >
+          <button onClick={() => navigate('/cart')} className="relative p-2.5 rounded-full hover:bg-onLight/5 transition-colors" aria-label="Cart">
             <ShoppingBag size={19} className="text-onLight/70" strokeWidth={1.75} />
             {cartCount > 0 && (
               <span className="absolute top-1 right-1 bg-leaf text-white text-[10px] leading-none w-4 h-4 rounded-full flex items-center justify-center font-semibold">
@@ -101,11 +123,9 @@ export default function Navbar() {
               <button
                 onClick={() => setUserMenu((o) => !o)}
                 className="size-9 rounded-full bg-leaf/15 flex items-center justify-center font-display font-semibold text-xs text-leaf-dim hover:bg-leaf/25 transition-colors"
-                aria-label="Profile menu"
               >
                 {initials}
               </button>
-
               <AnimatePresence>
                 {userMenu && (
                   <motion.div
@@ -120,24 +140,13 @@ export default function Navbar() {
                       <div className="text-xs text-onLight/45 truncate mt-0.5">{user?.email}</div>
                       <div className="text-[10px] font-semibold uppercase tracking-wide text-leaf-dim mt-1">{user?.role}</div>
                     </div>
-
                     <div className="py-1">
-                      <MenuLink to={dashboardRoute} icon={LayoutDashboard} onClick={() => setUserMenu(false)}>
-                        Dashboard
-                      </MenuLink>
-                      <MenuLink to="/profile" icon={Settings} onClick={() => setUserMenu(false)}>
-                        Profile
-                      </MenuLink>
-                      <MenuLink to="/wishlist" icon={Heart} onClick={() => setUserMenu(false)}>
-                        Wishlist
-                      </MenuLink>
+                      <MenuLink to={dashboardRoute} icon={LayoutDashboard} onClick={() => setUserMenu(false)}>Dashboard</MenuLink>
+                      <MenuLink to="/profile" icon={Settings} onClick={() => setUserMenu(false)}>Profile</MenuLink>
+                      <MenuLink to="/wishlist" icon={Heart} onClick={() => setUserMenu(false)}>Wishlist</MenuLink>
                     </div>
-
                     <div className="border-t border-onLight/8 py-1">
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-coral hover:bg-coral/5 transition-colors"
-                      >
+                      <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-coral hover:bg-coral/5 transition-colors">
                         <LogOut size={15} /> Log out
                       </button>
                     </div>
@@ -158,11 +167,7 @@ export default function Navbar() {
 
 function MenuLink({ to, icon: Icon, children, onClick }) {
   return (
-    <Link
-      to={to}
-      onClick={onClick}
-      className="flex items-center gap-3 px-4 py-2.5 text-sm text-onLight/70 hover:bg-onLight/5 hover:text-onLight transition-colors"
-    >
+    <Link to={to} onClick={onClick} className="flex items-center gap-3 px-4 py-2.5 text-sm text-onLight/70 hover:bg-onLight/5 hover:text-onLight transition-colors">
       <Icon size={15} /> {children}
     </Link>
   )

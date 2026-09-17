@@ -2,15 +2,21 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { motion } from 'framer-motion'
-import { Star, ShoppingBag, Heart, Package, ShieldCheck, Truck } from 'lucide-react'
+import { Star, ShoppingBag, Heart, Package, ShieldCheck, Truck, Check } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Button from '@/components/ui/Button'
 import PriceTag from '@/components/PriceTag'
 import ProductThumb from '@/components/ProductThumb'
-import { fetchProduct, fetchProductReviews, addToCartApi, addToWishlistApi, recordProductView } from '@/store/slices/catalogSlice'
+import {
+  fetchProduct,
+  fetchProductReviews,
+  addToCartApi,
+  addToWishlistApi,
+  recordProductView,
+} from '@/store/slices/catalogSlice'
+import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
-import Spinner from '@/components/ui/Spinner'
 
 export default function ProductDetailPage() {
   const { id } = useParams()
@@ -21,6 +27,15 @@ export default function ProductDetailPage() {
   const isAuthed = useSelector((s) => s.auth.isAuthenticated)
   const [activeImg, setActiveImg] = useState(0)
   const [added, setAdded] = useState(false)
+  const [wishlisted, setWishlisted] = useState(false)
+
+  // Review form state
+  const [rating, setRating] = useState(0)
+  const [hoverRating, setHoverRating] = useState(0)
+  const [comment, setComment] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [reviewError, setReviewError] = useState(null)
+  const [reviewSuccess, setReviewSuccess] = useState(false)
 
   useEffect(() => {
     dispatch(fetchProduct(id))
@@ -37,7 +52,35 @@ export default function ProductDetailPage() {
 
   async function handleWishlist() {
     if (!isAuthed || !product) return
-    dispatch(addToWishlistApi(product.id))
+    try {
+      await dispatch(addToWishlistApi(product.id)).unwrap()
+      setWishlisted(true)
+      setTimeout(() => setWishlisted(false), 2500)
+    } catch (e) {
+      // Already in wishlist or other issue — silently ignore
+    }
+  }
+
+  async function submitReview(e) {
+    e.preventDefault()
+    if (rating < 1) {
+      setReviewError('Pick a rating (1-5 stars)')
+      return
+    }
+    setSubmitting(true)
+    setReviewError(null)
+    try {
+      await api.post('/reviews', { productId: Number(id), rating, comment })
+      setReviewSuccess(true)
+      setComment('')
+      setRating(0)
+      dispatch(fetchProductReviews(id))
+      setTimeout(() => setReviewSuccess(false), 3000)
+    } catch (err) {
+      setReviewError(err.message || 'Could not submit review')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (loading || !product) {
@@ -132,14 +175,14 @@ export default function ProductDetailPage() {
               </div>
               {avg && (
                 <span className="text-xs text-onLight/50">
-                  {avg} · {reviews?.totalReviews || 0} review{(reviews?.totalReviews || 0) !== 1 ? 's' : ''}
+                  {avg} Â· {reviews?.totalReviews || 0} review{(reviews?.totalReviews || 0) !== 1 ? 's' : ''}
                 </span>
               )}
             </div>
 
-            <Link to={`/products?seller=${product.sellerId}`} className="text-sm text-onLight/60 hover:text-leaf-dim">
+            <div className="text-sm text-onLight/60">
               Sold by <span className="font-medium text-onLight">{product.sellerName}</span>
-            </Link>
+            </div>
 
             <p className="text-onLight/70 mt-6 mb-8 leading-relaxed">{product.description}</p>
 
@@ -147,7 +190,7 @@ export default function ProductDetailPage() {
               <PriceTag product={product} size="lg" />
               <div className="text-sm">
                 {product.stock > 0 ? (
-                  <span className="text-emerald">In stock · {product.stock} available</span>
+                  <span className="text-emerald">In stock Â· {product.stock} available</span>
                 ) : (
                   <span className="text-coral">Out of stock</span>
                 )}
@@ -160,7 +203,8 @@ export default function ProductDetailPage() {
                 {added ? 'Added to cart' : isAuthed ? 'Add to cart' : 'Login to buy'}
               </Button>
               <Button size="lg" variant="outline" onClick={handleWishlist} disabled={!isAuthed}>
-                <Heart size={16} /> Wishlist
+                <Heart size={16} className={wishlisted ? 'fill-coral text-coral' : ''} />
+                {wishlisted ? 'Added to wishlist!' : 'Wishlist'}
               </Button>
             </div>
 
@@ -180,11 +224,19 @@ export default function ProductDetailPage() {
 
         {/* Reviews */}
         <div className="border-t border-onLight/10 pt-12">
-          <h2 className="font-display text-2xl font-semibold mb-6">Reviews</h2>
+          <div className="mb-6">
+            <h2 className="font-display text-2xl font-semibold">Reviews</h2>
+            {avg && (
+              <p className="text-sm text-onLight/50 mt-1">
+                {avg} â˜… average Â· {reviews?.totalReviews || 0} review{(reviews?.totalReviews || 0) !== 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
+
           {(!reviews || reviews.reviews.length === 0) ? (
-            <p className="text-sm text-onLight/45">No reviews yet — be the first.</p>
+            <p className="text-sm text-onLight/45 mb-10">No reviews yet â€” be the first.</p>
           ) : (
-            <div className="flex flex-col gap-4 max-w-2xl">
+            <div className="flex flex-col gap-4 max-w-2xl mb-10">
               {reviews.reviews.map((r) => (
                 <div key={r.id} className="bg-white border border-onLight/10 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -198,6 +250,84 @@ export default function ProductDetailPage() {
                   {r.comment && <p className="text-sm text-onLight/70">{r.comment}</p>}
                 </div>
               ))}
+            </div>
+          )}
+
+          {isAuthed ? (
+            <div className="max-w-2xl bg-white border border-onLight/10 rounded-2xl p-6">
+              <h3 className="font-display text-base font-semibold mb-2">Write a review</h3>
+              <p className="text-xs text-onLight/50 mb-5">
+                You can only review products you have purchased and received.
+              </p>
+
+              <form onSubmit={submitReview}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-onLight/80 mb-2">Rating</label>
+                  <div className="flex gap-1 items-center" onMouseLeave={() => setHoverRating(0)}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onMouseEnter={() => setHoverRating(n)}
+                        onClick={() => setRating(n)}
+                        className="transition-transform hover:scale-110"
+                        aria-label={`${n} star${n !== 1 ? 's' : ''}`}
+                      >
+                        <Star
+                          size={26}
+                          className={
+                            n <= (hoverRating || rating)
+                              ? 'fill-amber text-amber'
+                              : 'text-onLight/25'
+                          }
+                        />
+                      </button>
+                    ))}
+                    {rating > 0 && (
+                      <span className="ml-3 text-sm text-onLight/60">
+                        {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'][rating]}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-onLight/80 mb-2">Your review</label>
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={4}
+                    maxLength={2000}
+                    placeholder="What did you like or dislike? How was the quality?"
+                    className="w-full px-4 py-3 rounded-xl border border-onLight/15 bg-white text-sm outline-none focus:border-leaf focus:ring-1 focus:ring-leaf resize-y"
+                  />
+                  <div className="text-[10px] text-onLight/35 text-right mt-1">{comment.length}/2000</div>
+                </div>
+
+                {reviewError && (
+                  <div className="text-sm text-coral bg-coral/8 border border-coral/20 rounded-xl px-4 py-2.5 mb-4">
+                    {reviewError}
+                  </div>
+                )}
+                {reviewSuccess && (
+                  <div className="text-sm text-leaf-dim bg-leaf/8 border border-leaf/20 rounded-xl px-4 py-2.5 mb-4 flex items-center gap-2">
+                    <Check size={14} /> Review posted. Thanks for the feedback!
+                  </div>
+                )}
+
+                <Button type="submit" loading={submitting} disabled={submitting || rating === 0}>
+                  Post review
+                </Button>
+              </form>
+            </div>
+          ) : (
+            <div className="max-w-2xl bg-leaf/5 border border-leaf/20 rounded-2xl p-6">
+              <p className="text-sm text-onLight/70">
+                <Link to={`/login?redirect=/products/${id}`} className="text-leaf-dim font-medium hover:underline">
+                  Log in
+                </Link>{' '}
+                to leave a review.
+              </p>
             </div>
           )}
         </div>

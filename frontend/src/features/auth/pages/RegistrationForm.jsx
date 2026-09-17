@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { motion } from 'framer-motion'
 import Button from '@/components/ui/Button'
@@ -11,6 +11,8 @@ import { getPostAuthRedirect } from '@/features/auth/postAuthRedirect'
 export default function RegistrationForm() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const redirect = params.get('redirect')
   const { loading, error } = useSelector((s) => s.auth)
   const [form, setForm] = useState({ fullName: '', email: '', password: '', phone: '' })
 
@@ -20,7 +22,10 @@ export default function RegistrationForm() {
     e.preventDefault()
     dispatch(clearError())
     const action = await dispatch(registerUser(form))
-    if (registerUser.fulfilled.match(action)) navigate(getPostAuthRedirect(action.payload))
+    if (registerUser.fulfilled.match(action)) {
+      const target = redirect || getPostAuthRedirect(action.payload)
+      navigate(target)
+    }
   }
 
   return (
@@ -42,11 +47,11 @@ export default function RegistrationForm() {
         </Field>
       </div>
       {error && <p className="text-xs text-coral mt-4">{error}</p>}
-      <Button type="submit" size="lg" className="w-full mt-8" loading={loading}>
+      <Button type="submit" size="lg" className="w-full mt-8" loading={loading} disabled={loading}>
         Create account
       </Button>
       <p className="text-center text-sm text-onLight/50 mt-6">
-        Already have an account? <Link to="/login" className="text-leaf hover:underline">Log in</Link>
+        Already have an account? <Link to={`/login${redirect ? '?redirect=' + encodeURIComponent(redirect) : ''}`} className="text-leaf hover:underline">Log in</Link>
       </p>
     </AuthLayout>
   )

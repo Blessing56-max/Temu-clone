@@ -1,296 +1,73 @@
-Temu Clone 🛍️
+﻿# Kora Marketplace
 
-A full-stack e-commerce web application inspired by the Temu shopping experience. The project recreates the core experience of an online marketplace, combining a responsive React frontend with a Java and Spring Boot backend.
+**Fast and Easy Marketing** — a full-stack e-commerce marketplace where buyers discover products from verified sellers, with real order tracking from placement to delivery.
 
-Project Overview
+Independent academic project. Not affiliated with or endorsed by Temu. Built for NIIT MMS4.
 
-The Temu Clone is designed to provide a modern online shopping experience where users can browse products, view product information, manage items in a shopping cart, and interact with an organized e-commerce interface.
+## Stack
 
-The application is built as a full-stack project, with the frontend responsible for the user interface and the backend handling application logic, REST APIs, and data management.
+- **Frontend:** React 18, Vite, Redux Toolkit, Tailwind CSS v4, Framer Motion
+- **Backend:** Java 21, Spring Boot 3.3, Spring Security, Spring Data JPA, Hibernate, Flyway
+- **Database:** PostgreSQL 15
+- **Auth:** JWT (access + refresh tokens), BCrypt
+- **Testing:** JUnit 5, Mockito, Testcontainers
 
-────────
+## What Works
 
-Project Blueprint
+Buyers: register, login, browse, search, filter, cart, wishlist, checkout, live order tracking, notifications, reviews.
 
-1. Frontend
+Sellers: one-click become seller, add/edit/delete products, receive new-order notifications, mark orders PACKED and SHIPPED, sales dashboard with revenue and top products, analytics page.
 
-The frontend provides the user-facing shopping experience.
+Admins: platform stats, user management, role change, suspend, audit log.
 
-Main responsibilities include:
+## Quick Start
 
-• Displaying products
-• Showing product categories
-• Product search and browsing
-• Product details
-• Shopping cart interface
-• Responsive navigation
-• Responsive layouts for different screen sizes
+### 1. Create the database
 
-2. Backend
+    createdb kora_db
+    psql -U postgres -c "CREATE USER kora WITH PASSWORD 'kora_dev_password';"
+    psql -U postgres -c "ALTER DATABASE kora_db OWNER TO kora;"
 
-The backend is built with Java and Spring Boot.
+### 2. Run backend
 
-Main responsibilities include:
+    cd backend
+    mvn spring-boot:run
 
-• REST API development
-• Product management
-• User and application data handling
-• Business logic
-• Communication between the frontend and database
+Runs on http://localhost:8080. Flyway migrates schema. DataSeeder populates 6 users, 8 categories, 46 products.
 
-3. Database
+Swagger UI: http://localhost:8080/swagger-ui.html
 
-MySQL is used to store and manage application data.
+### 3. Run frontend
 
-The database can be used for information such as:
+    cd frontend
+    npm install
+    npm run dev
 
-• Products
-• Users
-• Orders
-• Cart information
-• Other e-commerce data
+Runs on http://localhost:5173.
 
-────────
+## Demo Accounts
 
-Key Features
+Password for all: `Password123!`
 
-• 🛍️ Product browsing
-• 🔎 Product search
-• 🏷️ Product categories
-• 📦 Product details
-• 🛒 Shopping cart
-• 📱 Responsive design
-• 💰 Product pricing
-• 🔗 Frontend and backend API integration
-• 🗄️ Database-backed application
+| Email | Role |
+|-------|------|
+| customer@kora.test | Buyer |
+| blessing@kora.test | Seller |
+| nathan@kora.test | Seller |
+| techhub@kora.test | Seller |
+| admin@kora.test | Admin |
 
-────────
+## Docs
 
-Technologies Used
+- [Architecture](docs/architecture.md)
+- [API Reference](docs/api.md)
+- [Demo Script](docs/demo-script.md)
 
-Frontend
+## Team
 
-• React — Building the user interface
-• JavaScript — Frontend functionality
-• HTML5 — Page structure
-• CSS3 — Styling and responsive design
+- Adedayo Nathan — Backend, database, security, order flow
+- Adedayo Blessing — Frontend, UI/UX, seller experience
 
-Backend
+## License
 
-• Java — Backend programming language
-• Spring Boot — Backend framework and REST API development
-
-Database
-
-• MySQL — Relational database management
-
-Development Tools
-
-• Git — Version control
-• GitHub — Source code hosting and collaboration
-
-────────
-
-Architecture
-
-The application follows a full-stack architecture:
-
-```text
-┌───────────────────────────┐
-│       React Frontend      │
-│   HTML / CSS / JavaScript │
-└─────────────┬─────────────┘
-              │
-              │ REST API
-              ▼
-┌───────────────────────────┐
-│      Spring Boot API      │
-│          Java             │
-└─────────────┬─────────────┘
-              │
-              │ Database Queries
-              ▼
-┌───────────────────────────┐
-│          MySQL            │
-│         Database          │
-└───────────────────────────┘
-```
-
-────────
-
-Project Structure
-
-A typical project structure is organized into separate frontend and backend applications:
-
-```text
-temu-clone/
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── assets/
-│   │   ├── services/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── package.json
-│
-├── backend/
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/
-│   │   │   └── resources/
-│   │   └── test/
-│   └── pom.xml
-│
-└── README.md
-```
-
-────────
-
-Backend Structure
-
-The Spring Boot backend can be organized using the following layers:
-
-```text
-backend/
-└── src/main/java/
-    └── .../
-        ├── controller/
-        ├── service/
-        ├── repository/
-        ├── model/
-        └── config/
-```
-
-Controller
-
-Handles incoming HTTP requests and exposes REST API endpoints.
-
-Service
-
-Contains the main application and business logic.
-
-Repository
-
-Handles communication with the MySQL database.
-
-Model
-
-Represents the application’s data entities.
-
-Configuration
-
-Contains backend configuration and application settings.
-
-────────
-
-API Integration
-
-The React frontend communicates with the Spring Boot backend through REST APIs.
-
-The general flow is:
-
-```text
-User
-  ↓
-React Frontend
-  ↓
-REST API Request
-  ↓
-Spring Boot Backend
-  ↓
-Service Layer
-  ↓
-Repository
-  ↓
-MySQL Database
-  ↓
-Response
-  ↓
-React Frontend
-```
-
-This allows the frontend and backend to work together as a complete e-commerce application.
-
-────────
-
-Getting Started
-
-Prerequisites
-
-Before running the project, make sure you have installed:
-
-• Node.js
-• npm
-• Java JDK
-• Spring Boot
-• MySQL
-• Git
-
-Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Backend Setup
-
-Navigate to the backend directory and run:
-
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-
-On Windows, you can use:
-
-```bash
-mvnw.cmd spring-boot:run
-```
-
-Database Setup
-
-1. Install and start MySQL.
-2. Create the required database.
-3. Configure the database connection in the Spring Boot application configuration.
-4. Start the backend application.
-
-────────
-
-Future Improvements
-
-Possible improvements for the project include:
-
-• User authentication and authorization
-• Product reviews and ratings
-• Wishlist functionality
-• Order tracking
-• Payment integration
-• Admin dashboard
-• Inventory management
-• Product recommendations
-• Improved search and filtering
-• Deployment of the complete full-stack application
-
-────────
-
-Learning Goals
-
-This project provides practical experience with:
-
-• Building responsive React applications
-• Creating REST APIs with Spring Boot
-• Developing backend applications with Java
-• Connecting a frontend to a backend
-• Working with MySQL databases
-• Structuring a full-stack application
-• Using Git and GitHub for version control
-
-────────
-
-Disclaimer
-
-This project is created for educational and portfolio purposes. It is an independent project inspired by the general shopping experience of Temu and is not affiliated with or endorsed by Temu.
+Academic project. All rights reserved by the authors.

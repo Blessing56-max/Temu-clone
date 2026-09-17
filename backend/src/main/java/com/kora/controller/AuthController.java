@@ -58,6 +58,22 @@ public class AuthController {
         authService.logout(auth.getName());
         return ResponseEntity.ok(Map.of("message", "Logged out"));
     }
+    @PutMapping("/me")
+    @Operation(summary = "Update current user profile")
+    public ResponseEntity<UserResponse> updateProfile(@Valid @RequestBody com.kora.dto.request.UpdateProfileRequest req,
+                                                       Authentication auth) {
+        if (auth == null) throw new ApiException(HttpStatus.UNAUTHORIZED, "Not authenticated");
+        return ResponseEntity.ok(authService.updateProfile(auth.getName(), req));
+    }
+
+    @PostMapping("/change-password")
+    @Operation(summary = "Change password for current user")
+    public ResponseEntity<Map<String, String>> changePassword(@Valid @RequestBody com.kora.dto.request.ChangePasswordRequest req,
+                                                              Authentication auth) {
+        if (auth == null) throw new ApiException(HttpStatus.UNAUTHORIZED, "Not authenticated");
+        authService.changePassword(auth.getName(), req);
+        return ResponseEntity.ok(Map.of("message", "Password changed. Please log in again."));
+    }
 
     @GetMapping("/me")
     @Operation(summary = "Get current authenticated user")

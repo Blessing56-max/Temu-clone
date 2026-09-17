@@ -39,11 +39,11 @@ export default function Login() {
         </Field>
       </div>
       {error && <p className="text-xs text-coral mt-4 text-center">{error}</p>}
-      <Button type="submit" size="lg" className="w-full mt-8" loading={loading}>
+      <Button type="submit" size="lg" className="w-full mt-8" loading={loading} disabled={loading}>
         Log in
       </Button>
       <p className="text-center text-sm text-onLight/50 mt-6">
-        No account? <Link to="/register" className="text-leaf hover:underline">Create one</Link>
+        No account? <Link to={`/register${redirect ? '?redirect=' + encodeURIComponent(redirect) : ''}`} className="text-leaf hover:underline">Create one</Link>
       </p>
     </AuthLayout>
   )

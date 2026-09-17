@@ -89,6 +89,28 @@ public class AuthService {
         userRepository.findByEmail(email).ifPresent(refreshTokenRepository::revokeAllByUser);
     }
 
+    @org.springframework.transaction.annotation.Transactional
+    public UserResponse updateProfile(String email, com.kora.dto.request.UpdateProfileRequest req) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(InvalidCredentialsException::new);
+        user.setFullName(req.fullName());
+        user.setPhone(req.phone());
+        userRepository.save(user);
+        return userMapper.toResponse(user);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void changePassword(String email, com.kora.dto.request.ChangePasswordRequest req) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(InvalidCredentialsException::new);
+        if (!passwordEncoder.matches(req.currentPassword(), user.getPasswordHash())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+        user.setPasswordHash(passwordEncoder.encode(req.newPassword()));
+        userRepository.save(user);
+        refreshTokenRepository.revokeAllByUser(user);
+    }
+
     private AuthResponse issueTokens(User user) {
         String access = jwtService.generateAccessToken(user);
         String refresh = UUID.randomUUID().toString() + "-" + UUID.randomUUID();

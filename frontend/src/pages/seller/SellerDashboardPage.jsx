@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { DollarSign, ShoppingCart, Package, Star, Eye, TrendingUp, ArrowRight } from 'lucide-react'
+import { DollarSign, ShoppingCart, Package, Star, Eye, TrendingUp, ArrowRight, AlertCircle } from 'lucide-react'
 import SellerLayout from '@/components/seller/SellerLayout'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -10,37 +10,72 @@ export default function SellerDashboardPage() {
   const [data, setData] = useState(null)
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     Promise.all([
       api.get('/seller/dashboard'),
-      api.get('/seller/orders'),
-    ]).then(([d, o]) => {
-      setData(d)
-      setOrders(o)
-    }).catch(console.error).finally(() => setLoading(false))
+      api.get('/seller/orders').catch(() => []),
+    ])
+      .then(([d, o]) => {
+        setData(d || {})
+        setOrders(Array.isArray(o) ? o : [])
+      })
+      .catch((e) => setError(e.message || 'Could not load dashboard'))
+      .finally(() => setLoading(false))
   }, [])
-
-  const actionable = orders.filter((o) => ['PAID', 'PACKED'].includes(o.status))
 
   if (loading) {
     return (
       <SellerLayout>
-        <div className="text-center py-20 text-onLight/50">Loading dashboard...</div>
+        <div className="space-y-6">
+          <div className="h-10 w-64 bg-onLight/5 rounded-lg animate-pulse" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-32 bg-white border border-onLight/10 rounded-2xl animate-pulse" />
+            ))}
+          </div>
+          <div className="h-64 bg-white border border-onLight/10 rounded-2xl animate-pulse" />
+        </div>
       </SellerLayout>
     )
   }
 
+  if (error) {
+    return (
+      <SellerLayout>
+        <div className="max-w-lg bg-white border border-coral/25 rounded-2xl p-8">
+          <div className="flex items-center gap-3 mb-4">
+            <AlertCircle size={20} className="text-coral" />
+            <h1 className="font-display text-lg font-semibold">Dashboard couldn't load</h1>
+          </div>
+          <p className="text-sm text-onLight/60 mb-4">{error}</p>
+          <p className="text-xs text-onLight/45">This usually means the backend isn't running or you're not signed in as a seller.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-6 text-sm font-medium bg-ink text-onDark rounded-full px-5 py-2.5 hover:bg-canopy transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </SellerLayout>
+    )
+  }
+
+  const d = data || {}
+  const topSelling = Array.isArray(d.topSellingProducts) ? d.topSellingProducts : []
+  const topViewed = Array.isArray(d.topViewedProducts) ? d.topViewedProducts : []
+  const monthly = Array.isArray(d.monthlyRevenue) ? d.monthlyRevenue : []
+  const actionable = (orders || []).filter((o) => ['PAID', 'PACKED'].includes(o.status))
+  const firstName = (d.storeName || 'Seller').split(' ')[0]
+
   return (
     <SellerLayout>
       <div className="mb-8">
-        <h1 className="font-display text-3xl font-semibold">
-          Welcome back, {data?.storeName?.split(' ')[0]}
-        </h1>
+        <h1 className="font-display text-3xl font-semibold">Welcome back, {firstName}</h1>
         <p className="text-sm text-onLight/50 mt-1">Here's how your store is doing.</p>
       </div>
 
-      {/* Pending order alert */}
       {actionable.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -55,9 +90,7 @@ export default function SellerDashboardPage() {
               <div className="font-medium">
                 {actionable.length} order{actionable.length !== 1 ? 's' : ''} need action
               </div>
-              <div className="text-xs text-onLight/55 mt-0.5">
-                Pack and ship to keep buyers happy.
-              </div>
+              <div className="text-xs text-onLight/55 mt-0.5">Pack and ship to keep buyers happy.</div>
             </div>
           </div>
           <Link
@@ -69,36 +102,32 @@ export default function SellerDashboardPage() {
         </motion.div>
       )}
 
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <Stat icon={DollarSign} label="Total revenue" value={`₦${Number(data?.totalRevenue || 0).toLocaleString()}`} tone="leaf" />
-        <Stat icon={ShoppingCart} label="Orders" value={data?.totalOrders || 0} sub={`${data?.totalUnitsSold || 0} units sold`} tone="canopy" />
-        <Stat icon={Package} label="Products" value={data?.totalProducts || 0} tone="amber" />
-        <Stat icon={Star} label="Avg. rating" value={data?.averageRating ?? '—'} sub={`${data?.totalReviews || 0} reviews`} tone="emerald" />
+        <Stat icon={DollarSign} label="Total revenue" value={`₦${Number(d.totalRevenue || 0).toLocaleString()}`} tone="leaf" />
+        <Stat icon={ShoppingCart} label="Orders" value={d.totalOrders || 0} sub={`${d.totalUnitsSold || 0} units sold`} tone="canopy" />
+        <Stat icon={Package} label="Products" value={d.totalProducts || 0} tone="amber" />
+        <Stat icon={Star} label="Avg. rating" value={d.averageRating ?? '—'} sub={`${d.totalReviews || 0} reviews`} tone="emerald" />
       </div>
 
-      {/* Top products + views */}
       <div className="grid md:grid-cols-2 gap-5">
         <Panel title="Top selling products" icon={TrendingUp}>
-          {data.topSellingProducts.length === 0 ? (
+          {topSelling.length === 0 ? (
             <p className="text-sm text-onLight/45">No sales yet.</p>
-          ) : data.topSellingProducts.map((p) => (
+          ) : topSelling.map((p) => (
             <div key={p.productId} className="flex justify-between items-center py-3 border-b border-onLight/5 last:border-0">
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium truncate">{p.productName}</div>
                 <div className="text-xs text-onLight/45 mt-0.5">{p.unitsSold} sold</div>
               </div>
-              <div className="text-sm font-medium shrink-0 ml-3">
-                &#8358;{Number(p.revenue).toLocaleString()}
-              </div>
+              <div className="text-sm font-medium shrink-0 ml-3">₦{Number(p.revenue).toLocaleString()}</div>
             </div>
           ))}
         </Panel>
 
         <Panel title="Most viewed products" icon={Eye}>
-          {data.topViewedProducts.length === 0 ? (
+          {topViewed.length === 0 ? (
             <p className="text-sm text-onLight/45">No views yet.</p>
-          ) : data.topViewedProducts.map((p) => (
+          ) : topViewed.map((p) => (
             <div key={p.productId} className="flex justify-between items-center py-3 border-b border-onLight/5 last:border-0">
               <div className="text-sm font-medium truncate flex-1">{p.productName}</div>
               <div className="text-sm shrink-0 ml-3 flex items-center gap-1.5 text-onLight/60">
@@ -109,17 +138,17 @@ export default function SellerDashboardPage() {
         </Panel>
 
         <Panel title="Monthly revenue" icon={DollarSign} className="md:col-span-2">
-          {data.monthlyRevenue.length === 0 ? (
+          {monthly.length === 0 ? (
             <p className="text-sm text-onLight/45">No revenue yet.</p>
           ) : (
             <div className="flex items-end gap-3 h-48 mt-2">
-              {data.monthlyRevenue.map((m) => {
-                const max = Math.max(...data.monthlyRevenue.map((x) => Number(x.revenue)), 1)
+              {monthly.map((m) => {
+                const max = Math.max(...monthly.map((x) => Number(x.revenue)), 1)
                 const h = (Number(m.revenue) / max) * 100
                 return (
                   <div key={m.month} className="flex-1 flex flex-col items-center gap-2 group">
                     <div className="text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                      &#8358;{Number(m.revenue).toLocaleString()}
+                      ₦{Number(m.revenue).toLocaleString()}
                     </div>
                     <div className="w-full relative bg-leaf/15 rounded-t-lg overflow-hidden" style={{ height: `${h}%`, minHeight: 6 }}>
                       <div className="absolute inset-0 bg-leaf rounded-t-lg" />
