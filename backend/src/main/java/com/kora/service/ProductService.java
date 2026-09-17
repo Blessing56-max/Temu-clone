@@ -124,6 +124,9 @@ public class ProductService {
         if (!p.getSeller().getEmail().equals(sellerEmail)) {
             throw new ApiException(HttpStatus.FORBIDDEN, "You can only delete your own products");
         }
-        productRepository.delete(p);
+        // Soft delete: hide from storefront but keep the row so past orders still reference it.
+        p.setActive(false);
+        p.setStock(0);
+        productRepository.save(p);
     }
 }

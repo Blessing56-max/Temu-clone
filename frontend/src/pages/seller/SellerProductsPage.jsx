@@ -23,7 +23,7 @@ export default function SellerProductsPage() {
   useEffect(() => { load() }, [])
 
   async function deleteProduct(id) {
-    if (!confirm('Delete this product? This cannot be undone.')) return
+    if (!confirm('Remove this product from your storefront?\n\nIt will be hidden from buyers but past orders still keep their record.')) return
     try { await api.delete(`/products/${id}`); load() }
     catch (e) { alert(e.message) }
   }

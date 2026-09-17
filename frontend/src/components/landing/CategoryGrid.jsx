@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import Reveal from '@/components/Reveal'
 import { fetchCategories } from '@/store/slices/catalogSlice'
 
-// Curated category hero images — replace URLs to swap art direction.
 const CATEGORY_IMAGES = {
   'Electronics': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
   'Fashion': 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80',
@@ -29,7 +28,6 @@ export default function CategoryGrid() {
   }, [dispatch, categories.length])
 
   if (categories.length === 0) {
-    // Skeleton while loading
     return (
       <section className="bg-white py-24 border-t border-onLight/8">
         <div className="container-page">
@@ -60,7 +58,7 @@ export default function CategoryGrid() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {categories.map((cat, i) => (
             <Reveal key={cat.id} delay={i * 0.05}>
-              <Link to={`/products?category=${encodeURIComponent(cat.name)}`}>
+              <Link to={'/products?category=' + encodeURIComponent(cat.name)}>
                 <motion.div
                   whileHover={{ y: -4 }}
                   className="relative rounded-3xl aspect-[5/4] overflow-hidden group"
@@ -72,13 +70,18 @@ export default function CategoryGrid() {
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     onError={(e) => { e.currentTarget.src = FALLBACK_IMG }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-canopy/85 via-canopy/30 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-5">
-                    <div className="text-white font-display font-semibold text-base leading-tight">
+
+                  {/* Subtle top gradient for depth */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                  {/* SOLID DARK BAND at the bottom — text sits on this, always readable */}
+                  <div className="absolute inset-x-0 bottom-0 bg-black/85 backdrop-blur-md px-5 pt-5 pb-4">
+                    <div className="text-leaf-dim font-bold text-base md:text-lg leading-tight tracking-tight">
                       {cat.name}
                     </div>
-                    <div className="text-white/70 text-xs mt-1 flex items-center gap-1 group-hover:text-leaf transition-colors">
-                      Shop now <ArrowRight size={11} />
+                    <div className="text-leaf text-xs mt-1.5 flex items-center gap-1.5 font-bold tracking-wide uppercase" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
+                      Shop now
+                      <ArrowRight size={12} className="transition-transform group-hover:translate-x-1" />
                     </div>
                   </div>
                 </motion.div>
