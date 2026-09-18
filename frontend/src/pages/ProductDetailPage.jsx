@@ -8,6 +8,7 @@ import Footer from '@/components/Footer'
 import Button from '@/components/ui/Button'
 import PriceTag from '@/components/PriceTag'
 import ProductThumb from '@/components/ProductThumb'
+import { useToast } from '@/context/ToastContext'
 import {
   fetchProduct,
   fetchProductReviews,
@@ -21,10 +22,12 @@ import { cn } from '@/lib/utils'
 export default function ProductDetailPage() {
   const { id } = useParams()
   const dispatch = useDispatch()
+  const toast = useToast()
   const product = useSelector((s) => s.catalog.currentProduct)
   const loading = useSelector((s) => s.catalog.productLoading)
   const reviews = useSelector((s) => s.catalog.reviews[id])
   const isAuthed = useSelector((s) => s.auth.isAuthenticated)
+
   const [activeImg, setActiveImg] = useState(0)
   const [added, setAdded] = useState(false)
   const [wishlisted, setWishlisted] = useState(false)
@@ -44,20 +47,34 @@ export default function ProductDetailPage() {
   }, [dispatch, id])
 
   async function handleAddToCart() {
-    if (!isAuthed || !product) return
-    await dispatch(addToCartApi({ productId: product.id, quantity: 1 }))
-    setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
+    if (!product) return
+    if (!isAuthed) {
+      toast.push({ type: 'error', title: 'Log in to buy', description: 'Create an account or sign in.' })
+      return
+    }
+    const action = await dispatch(addToCartApi({ productId: product.id, quantity: 1 }))
+    if (addToCartApi.fulfilled.match(action)) {
+      setAdded(true)
+      toast.push({ type: 'success', title: 'Added to cart', description: product.name })
+      setTimeout(() => setAdded(false), 2000)
+    } else {
+      toast.push({ type: 'error', title: 'Could not add item', description: action.payload || 'Try again.' })
+    }
   }
 
   async function handleWishlist() {
-    if (!isAuthed || !product) return
+    if (!product) return
+    if (!isAuthed) {
+      toast.push({ type: 'error', title: 'Log in to save items', description: 'Create an account or sign in.' })
+      return
+    }
     try {
       await dispatch(addToWishlistApi(product.id)).unwrap()
       setWishlisted(true)
+      toast.push({ type: 'success', title: 'Saved to wishlist', description: product.name })
       setTimeout(() => setWishlisted(false), 2500)
     } catch (e) {
-      // Already in wishlist or other issue — silently ignore
+      toast.push({ type: 'error', title: 'Could not save', description: typeof e === 'string' ? e : 'Try again.' })
     }
   }
 
@@ -75,6 +92,7 @@ export default function ProductDetailPage() {
       setComment('')
       setRating(0)
       dispatch(fetchProductReviews(id))
+      toast.push({ type: 'success', title: 'Review posted', description: 'Thanks for the feedback!' })
       setTimeout(() => setReviewSuccess(false), 3000)
     } catch (err) {
       setReviewError(err.message || 'Could not submit review')
@@ -104,15 +122,16 @@ export default function ProductDetailPage() {
   }
 
   const images = product.images && product.images.length > 0
-    ? [...product.images].sort((a, b) => a.position - b.position)
+    ? [...product.images].sort((a, b) => (a.position || 0) - (b.position || 0))
     : []
   const currentImage = images[activeImg]
   const avg = reviews?.averageRating
+  const canAdd = product.stock > 0
 
   return (
     <div className="min-h-screen bg-paper">
       <Navbar />
-      <div className="container-page py-12">
+      <div className="container-page py-8 md:py-12">
         <div className="text-xs text-onLight/40 mb-6">
           <Link to="/products" className="hover:text-leaf-dim">Products</Link>
           {product.categoryName && (
@@ -123,7 +142,8 @@ export default function ProductDetailPage() {
           )}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-12 mb-20">
+        <div className="grid md:grid-cols-2 gap-10 md:gap-14 mb-16">
+          {/* LEFT: Images */}
           <div>
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
@@ -138,14 +158,14 @@ export default function ProductDetailPage() {
             </motion.div>
 
             {images.length > 1 && (
-              <div className="flex gap-2 mt-4">
+              <div className="flex gap-2 mt-4 overflow-x-auto">
                 {images.map((img, i) => (
                   <button
                     key={img.id}
                     onClick={() => setActiveImg(i)}
                     className={cn(
-                      'size-20 rounded-xl overflow-hidden border-2 transition-colors',
-                      activeImg === i ? 'border-leaf' : 'border-transparent',
+                      'size-20 rounded-xl overflow-hidden border-2 transition-colors shrink-0',
+                      activeImg === i ? 'border-leaf' : 'border-transparent hover:border-onLight/20',
                     )}
                   >
                     <img src={resolveImageUrl(img.url)} alt="" className="w-full h-full object-cover" />
@@ -155,11 +175,14 @@ export default function ProductDetailPage() {
             )}
           </div>
 
+          {/* RIGHT: Info */}
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             {product.categoryName && (
-              <span className="text-xs font-medium text-leaf">{product.categoryName}</span>
+              <span className="inline-block text-xs font-semibold text-leaf-dim bg-leaf/10 rounded-full px-2.5 py-1">
+                {product.categoryName}
+              </span>
             )}
-            <h1 className="font-display text-3xl md:text-4xl font-semibold mt-2 mb-3">
+            <h1 className="font-display text-3xl md:text-4xl font-bold mt-3 mb-3 leading-tight">
               {product.name}
             </h1>
 
@@ -173,50 +196,52 @@ export default function ProductDetailPage() {
                   />
                 ))}
               </div>
-              {avg && (
+              {avg ? (
                 <span className="text-xs text-onLight/50">
-                  {avg} Â· {reviews?.totalReviews || 0} review{(reviews?.totalReviews || 0) !== 1 ? 's' : ''}
+                  {avg} &middot; {reviews?.totalReviews || 0} review{(reviews?.totalReviews || 0) !== 1 ? 's' : ''}
                 </span>
+              ) : (
+                <span className="text-xs text-onLight/40">No reviews yet</span>
               )}
             </div>
 
-            <div className="text-sm text-onLight/60">
+            <div className="text-sm text-onLight/60 mb-6">
               Sold by <span className="font-medium text-onLight">{product.sellerName}</span>
             </div>
 
-            <p className="text-onLight/70 mt-6 mb-8 leading-relaxed">{product.description}</p>
+            <p className="text-onLight/70 leading-relaxed mb-8">{product.description}</p>
 
             <div className="flex items-center justify-between gap-6 mb-8 py-6 border-y border-onLight/10">
               <PriceTag product={product} size="lg" />
               <div className="text-sm">
-                {product.stock > 0 ? (
-                  <span className="text-emerald">In stock Â· {product.stock} available</span>
+                {canAdd ? (
+                  <span className="text-emerald font-medium">&bull; In stock &middot; {product.stock} available</span>
                 ) : (
-                  <span className="text-coral">Out of stock</span>
+                  <span className="text-coral font-medium">&bull; Out of stock</span>
                 )}
               </div>
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Button size="lg" onClick={handleAddToCart} disabled={product.stock === 0 || !isAuthed}>
+              <Button size="lg" onClick={handleAddToCart} disabled={!canAdd}>
                 <ShoppingBag size={16} />
-                {added ? 'Added to cart' : isAuthed ? 'Add to cart' : 'Login to buy'}
+                {added ? 'Added to cart!' : !canAdd ? 'Out of stock' : isAuthed ? 'Add to cart' : 'Login to buy'}
               </Button>
-              <Button size="lg" variant="outline" onClick={handleWishlist} disabled={!isAuthed}>
+              <Button size="lg" variant="outline" onClick={handleWishlist}>
                 <Heart size={16} className={wishlisted ? 'fill-coral text-coral' : ''} />
-                {wishlisted ? 'Added to wishlist!' : 'Wishlist'}
+                {wishlisted ? 'Saved' : 'Wishlist'}
               </Button>
             </div>
 
             <div className="grid grid-cols-3 gap-4 mt-10 pt-8 border-t border-onLight/10 text-xs">
               <div className="flex items-center gap-2 text-onLight/60">
-                <Truck size={14} className="text-leaf" /> 3-5 day delivery
+                <Truck size={14} className="text-leaf shrink-0" /> 3-5 day delivery
               </div>
               <div className="flex items-center gap-2 text-onLight/60">
-                <ShieldCheck size={14} className="text-leaf" /> 7-day returns
+                <ShieldCheck size={14} className="text-leaf shrink-0" /> 7-day returns
               </div>
               <div className="flex items-center gap-2 text-onLight/60">
-                <Package size={14} className="text-leaf" /> Secure payment
+                <Package size={14} className="text-leaf shrink-0" /> Secure payment
               </div>
             </div>
           </motion.div>
@@ -228,13 +253,13 @@ export default function ProductDetailPage() {
             <h2 className="font-display text-2xl font-semibold">Reviews</h2>
             {avg && (
               <p className="text-sm text-onLight/50 mt-1">
-                {avg} â˜… average Â· {reviews?.totalReviews || 0} review{(reviews?.totalReviews || 0) !== 1 ? 's' : ''}
+                {avg} ★ average &middot; {reviews?.totalReviews || 0} review{(reviews?.totalReviews || 0) !== 1 ? 's' : ''}
               </p>
             )}
           </div>
 
           {(!reviews || reviews.reviews.length === 0) ? (
-            <p className="text-sm text-onLight/45 mb-10">No reviews yet â€” be the first.</p>
+            <p className="text-sm text-onLight/45 mb-10">No reviews yet &mdash; be the first.</p>
           ) : (
             <div className="flex flex-col gap-4 max-w-2xl mb-10">
               {reviews.reviews.map((r) => (
@@ -275,11 +300,7 @@ export default function ProductDetailPage() {
                       >
                         <Star
                           size={26}
-                          className={
-                            n <= (hoverRating || rating)
-                              ? 'fill-amber text-amber'
-                              : 'text-onLight/25'
-                          }
+                          className={n <= (hoverRating || rating) ? 'fill-amber text-amber' : 'text-onLight/25'}
                         />
                       </button>
                     ))}
@@ -311,7 +332,7 @@ export default function ProductDetailPage() {
                 )}
                 {reviewSuccess && (
                   <div className="text-sm text-leaf-dim bg-leaf/8 border border-leaf/20 rounded-xl px-4 py-2.5 mb-4 flex items-center gap-2">
-                    <Check size={14} /> Review posted. Thanks for the feedback!
+                    <Check size={14} /> Review posted. Thanks!
                   </div>
                 )}
 

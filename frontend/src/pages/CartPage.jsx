@@ -1,23 +1,14 @@
 import { useEffect } from 'react'
 import { resolveImageUrl } from '@/lib/api'
 import { Link, useNavigate } from 'react-router-dom'
-import { resolveImageUrl } from '@/lib/api'
 import { useSelector, useDispatch } from 'react-redux'
-import { resolveImageUrl } from '@/lib/api'
 import { motion } from 'framer-motion'
-import { resolveImageUrl } from '@/lib/api'
 import { Trash2, ShoppingBag, Minus, Plus } from 'lucide-react'
-import { resolveImageUrl } from '@/lib/api'
 import Navbar from '@/components/Navbar'
-import { resolveImageUrl } from '@/lib/api'
 import Footer from '@/components/Footer'
-import { resolveImageUrl } from '@/lib/api'
 import Button from '@/components/ui/Button'
-import { resolveImageUrl } from '@/lib/api'
 import { fetchCart, updateCartItemApi, removeCartItemApi } from '@/store/slices/catalogSlice'
-import { resolveImageUrl } from '@/lib/api'
 import EmptyState from '@/components/ui/EmptyState'
-import { resolveImageUrl } from '@/lib/api'
 
 export default function CartPage() {
   const dispatch = useDispatch()

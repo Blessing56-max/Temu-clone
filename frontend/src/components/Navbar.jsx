@@ -1,18 +1,23 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { ShoppingBag, User2, Heart, LogOut, LayoutDashboard, Settings, Search } from 'lucide-react'
+import { ShoppingBag, User2, Heart, LogOut, LayoutDashboard, Settings, Search, Package, TrendingUp, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from './ui/Button'
 import ThemeToggle from './ThemeToggle'
 import NotificationBell from './NotificationBell'
 import { cn } from '@/lib/utils'
 import { logoutUser } from '@/features/auth/authSlice'
-import { fetchCart, fetchWishlist } from '@/store/slices/catalogSlice'
 
-const navLinks = [
-  { to: '/products', label: 'Browse' },
-  { to: '/sell', label: 'Sell on Kora' },
+const QUICK_LINKS = [
+  { to: '/products', label: 'Best Sellers' },
+  { to: '/products?sort=new', label: 'New In' },
+  { to: '/products?category=Fashion', label: 'Fashion' },
+  { to: '/products?category=Electronics', label: 'Electronics' },
+  { to: '/products?category=Home', label: 'Home' },
+  { to: '/products?category=Beauty', label: 'Beauty' },
+  { to: '/products?category=Sports', label: 'Sports' },
+  { to: '/products?category=Groceries', label: 'Groceries' },
 ]
 
 export default function Navbar() {
@@ -24,13 +29,6 @@ export default function Navbar() {
   const [userMenu, setUserMenu] = useState(false)
   const [searchInput, setSearchInput] = useState('')
   const menuRef = useRef(null)
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      dispatch(fetchCart())
-      dispatch(fetchWishlist())
-    }
-  }, [isAuthenticated, dispatch])
 
   useEffect(() => {
     function onClick(e) {
@@ -50,8 +48,9 @@ export default function Navbar() {
     '/customer/dashboard'
 
   function handleSearch(e) {
-    if (e.key === 'Enter' && searchInput.trim()) {
-      navigate(`/products?q=${encodeURIComponent(searchInput.trim())}`)
+    e.preventDefault()
+    if (searchInput.trim()) {
+      navigate('/products?q=' + encodeURIComponent(searchInput.trim()))
       setSearchInput('')
     }
   }
@@ -63,68 +62,90 @@ export default function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-paper/95 backdrop-blur border-b border-onLight/8">
+    <header className="sticky top-0 z-40 bg-white border-b border-onLight/8 shadow-sm">
       <nav className="container-page flex items-center justify-between h-16 gap-4">
-        <Link to="/" className="flex items-center gap-2 shrink-0 group" aria-label="Kora">
-          <span className="relative flex items-center justify-center">
-            <span className="size-2.5 rounded-full bg-leaf transition-transform duration-300 group-hover:scale-125" />
-            <span className="absolute size-2.5 rounded-full bg-leaf/40 animate-ping opacity-60 group-hover:opacity-100" />
+        {/* LEFT: Logo */}
+        <Link to="/" className="flex flex-col items-start shrink-0 group leading-none" aria-label="Kora">
+          <div className="relative flex items-start">
+            <svg
+              className="absolute -top-1.5 left-[52%] text-leaf transition-transform duration-300 group-hover:-translate-y-0.5"
+              width="11"
+              height="9"
+              viewBox="0 0 20 16"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M1 15 L1 3 L5.5 8 L10 1 L14.5 8 L19 3 L19 15 Z" />
+            </svg>
+            <span className="font-display font-extrabold text-2xl tracking-[-0.04em] text-onLight">
+              Kora
+            </span>
+          </div>
+          <span className="text-[8px] font-medium text-onLight/40 tracking-[0.22em] uppercase mt-0.5">
+            More for less
           </span>
-          <span className="font-display font-semibold text-xl tracking-tight text-onLight">Kora</span>
         </Link>
 
-        <div className="hidden md:flex flex-1 max-w-md">
-          <div className="relative w-full">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-onLight/35" />
-            <input
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={handleSearch}
-              placeholder="Search products..."
-              className="w-full h-10 pl-9 pr-4 rounded-full bg-onLight/[0.04] border border-onLight/10 text-sm outline-none focus:border-leaf focus:bg-white transition-colors"
-            />
-          </div>
-        </div>
-
-        <div className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => (
+        {/* MIDDLE-LEFT: Quick links (desktop only) */}
+        <div className="hidden lg:flex items-center gap-1 shrink-0">
+          {QUICK_LINKS.map((link) => (
             <Link
               key={link.label}
               to={link.to}
-              className="text-sm text-onLight/60 hover:text-leaf-dim hover:bg-leaf/8 rounded-full px-3.5 py-2 transition-colors"
+              className="text-xs text-onLight/60 hover:text-leaf-dim rounded-full px-3 py-2 transition-colors whitespace-nowrap"
             >
               {link.label}
             </Link>
           ))}
         </div>
 
-        <div className="flex items-center gap-1">
-          <ThemeToggle />
-          <button onClick={() => navigate('/wishlist')} className="relative p-2.5 rounded-full hover:bg-onLight/5 transition-colors hidden sm:block" aria-label="Wishlist">
-            <Heart size={19} className="text-onLight/70" strokeWidth={1.75} />
-            {wishlistCount > 0 && (
-              <span className="absolute top-1 right-1 bg-coral text-white text-[10px] leading-none w-4 h-4 rounded-full flex items-center justify-center font-semibold">
-                {wishlistCount > 9 ? '9+' : wishlistCount}
-              </span>
-            )}
-          </button>
-          <NotificationBell />
-          <button onClick={() => navigate('/cart')} className="relative p-2.5 rounded-full hover:bg-onLight/5 transition-colors" aria-label="Cart">
-            <ShoppingBag size={19} className="text-onLight/70" strokeWidth={1.75} />
-            {cartCount > 0 && (
-              <span className="absolute top-1 right-1 bg-leaf text-white text-[10px] leading-none w-4 h-4 rounded-full flex items-center justify-center font-semibold">
-                {cartCount > 9 ? '9+' : cartCount}
-              </span>
-            )}
-          </button>
+        {/* MIDDLE: BIG search bar */}
+        <form onSubmit={handleSearch} className="flex-1 max-w-2xl mx-2 hidden md:block">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search products, brands and categories..."
+              className="w-full h-11 pl-5 pr-14 rounded-full bg-onLight/[0.04] border-2 border-onLight/8 text-sm outline-none focus:border-leaf focus:bg-white transition-all"
+            />
+            <button
+              type="submit"
+              className="absolute right-1 top-1/2 -translate-y-1/2 size-9 rounded-full bg-leaf text-onDark hover:bg-leaf-dim transition-colors flex items-center justify-center"
+              aria-label="Search"
+            >
+              <Search size={16} strokeWidth={2.5} />
+            </button>
+          </div>
+        </form>
 
+        {/* Mobile search icon */}
+        <button
+          onClick={() => navigate('/products')}
+          className="md:hidden p-2.5 rounded-full hover:bg-onLight/5 transition-colors"
+          aria-label="Search"
+        >
+          <Search size={19} className="text-onLight/70" strokeWidth={1.75} />
+        </button>
+
+        {/* RIGHT: Account, wishlist, cart */}
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Account */}
           {isAuthenticated ? (
-            <div className="relative ml-1" ref={menuRef}>
+            <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setUserMenu((o) => !o)}
-                className="size-9 rounded-full bg-leaf/15 flex items-center justify-center font-display font-semibold text-xs text-leaf-dim hover:bg-leaf/25 transition-colors"
+                className="flex items-center gap-2 px-2 py-1 rounded-full hover:bg-onLight/5 transition-colors"
               >
-                {initials}
+                <div className="size-8 rounded-full bg-leaf/15 flex items-center justify-center font-display font-semibold text-[11px] text-leaf-dim">
+                  {initials}
+                </div>
+                <div className="hidden lg:block text-left leading-tight">
+                  <div className="text-[11px] font-medium text-onLight truncate max-w-[80px]">
+                    {user?.fullName?.split(' ')[0]}
+                  </div>
+                  <div className="text-[10px] text-onLight/45">Account</div>
+                </div>
               </button>
               <AnimatePresence>
                 {userMenu && (
@@ -155,10 +176,50 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
           ) : (
-            <Button size="md" variant="primary" onClick={() => navigate('/auth')} className={cn('ml-1.5')}>
-              Get Started
-            </Button>
+            <button
+              onClick={() => navigate('/auth')}
+              className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full hover:bg-onLight/5 transition-colors"
+            >
+              <User2 size={19} className="text-onLight/70" strokeWidth={1.75} />
+              <div className="hidden lg:block text-left leading-tight">
+                <div className="text-[11px] font-medium">Sign in / Register</div>
+                <div className="text-[10px] text-onLight/45">Orders & Account</div>
+              </div>
+            </button>
           )}
+
+          {/* Wishlist */}
+          <button
+            onClick={() => navigate('/wishlist')}
+            className="relative p-2.5 rounded-full hover:bg-onLight/5 transition-colors hidden sm:block"
+            aria-label="Wishlist"
+          >
+            <Heart size={19} className="text-onLight/70" strokeWidth={1.75} />
+            {wishlistCount > 0 && (
+              <span className="absolute top-1 right-1 bg-coral text-white text-[10px] leading-none w-4 h-4 rounded-full flex items-center justify-center font-semibold">
+                {wishlistCount > 9 ? '9+' : wishlistCount}
+              </span>
+            )}
+          </button>
+
+          {/* Notifications */}
+          <NotificationBell />
+
+          {/* Cart */}
+          <button
+            onClick={() => navigate('/cart')}
+            className="relative p-2.5 rounded-full hover:bg-onLight/5 transition-colors"
+            aria-label="Cart"
+          >
+            <ShoppingBag size={19} className="text-onLight/70" strokeWidth={1.75} />
+            {cartCount > 0 && (
+              <span className="absolute top-1 right-1 bg-leaf text-white text-[10px] leading-none w-4 h-4 rounded-full flex items-center justify-center font-semibold">
+                {cartCount > 9 ? '9+' : cartCount}
+              </span>
+            )}
+          </button>
+
+          <ThemeToggle />
         </div>
       </nav>
     </header>

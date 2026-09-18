@@ -1,28 +1,30 @@
-import { Truck, ShieldCheck, RotateCcw, Headphones } from 'lucide-react'
-import Reveal from '@/components/Reveal'
+import { Truck, ShieldCheck, RotateCcw, Headphones, Zap } from 'lucide-react'
 
 const ITEMS = [
-  { icon: Truck, title: 'Fast delivery', sub: '3-5 day shipping across Nigeria' },
-  { icon: ShieldCheck, title: 'Verified sellers', sub: 'ID-checked before listing' },
-  { icon: RotateCcw, title: 'Easy returns', sub: '7-day return window' },
-  { icon: Headphones, title: 'Real support', sub: 'Humans answer, fast' },
+  { icon: Truck, title: 'Free Shipping', sub: 'On all orders' },
+  { icon: ShieldCheck, title: 'Secure Payment', sub: '100% safe & trusted' },
+  { icon: RotateCcw, title: 'Easy Returns', sub: 'Within 14 days' },
+  { icon: Headphones, title: '24/7 Support', sub: "We're here to help" },
+  { icon: Zap, title: 'Daily Deals', sub: 'Up to 70% off' },
 ]
 
 export default function TrustRow() {
   return (
-    <section className="bg-white border-y border-onLight/8">
-      <div className="container-page py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
-        {ITEMS.map((item, i) => (
-          <Reveal key={item.title} delay={i * 0.05} className="flex items-start gap-3">
-            <div className="size-10 rounded-xl bg-leaf/10 flex items-center justify-center shrink-0">
-              <item.icon size={17} className="text-leaf-dim" strokeWidth={1.75} />
+    <section className="bg-paper py-6 border-y border-onLight/8">
+      <div className="container-page">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-4">
+          {ITEMS.map((item) => (
+            <div key={item.title} className="flex items-center gap-3">
+              <div className="size-9 rounded-full bg-leaf/10 flex items-center justify-center shrink-0">
+                <item.icon size={16} className="text-leaf-dim" strokeWidth={2} />
+              </div>
+              <div className="leading-tight min-w-0">
+                <div className="text-xs font-semibold text-onLight truncate">{item.title}</div>
+                <div className="text-[10px] text-onLight/50 truncate">{item.sub}</div>
+              </div>
             </div>
-            <div>
-              <div className="text-sm font-medium leading-tight">{item.title}</div>
-              <div className="text-xs text-onLight/45 leading-snug mt-1">{item.sub}</div>
-            </div>
-          </Reveal>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   )

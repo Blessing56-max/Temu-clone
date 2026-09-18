@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '@/lib/api'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -7,7 +8,6 @@ import {
   ArrowRight, Crown, UserCheck
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
-import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const ROLE_STYLES = {
