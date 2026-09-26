@@ -80,7 +80,7 @@ export default function NotificationBell() {
 
             <div className="max-h-96 overflow-y-auto">
               {items.length === 0 ? (
-                <div className="text-center py-12 text-sm text-onLight/45">All caught up.</div>
+                <div className="text-center py-12 text-sm text-onLight/60">All caught up.</div>
               ) : items.map((n) => (
                 <button
                   key={n.id}
@@ -96,7 +96,7 @@ export default function NotificationBell() {
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-medium truncate">{n.title}</div>
                       <div className="text-xs text-onLight/55 mt-0.5 line-clamp-2">{n.message}</div>
-                      <div className="text-[10px] text-onLight/35 mt-1">
+                      <div className="text-[10px] text-onLight/55 mt-1">
                         {new Date(n.createdAt).toLocaleString()}
                       </div>
                     </div>

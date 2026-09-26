@@ -71,7 +71,7 @@ export default function SellerSpotlight() {
                         <h3 className="font-semibold">{s.name}</h3>
                         <BadgeCheck size={15} className="text-leaf" />
                       </div>
-                      <div className="text-xs text-onLight/45 mt-0.5">{s.category}</div>
+                      <div className="text-xs text-onLight/60 mt-0.5">{s.category}</div>
                     </div>
                   </div>
 
@@ -79,7 +79,7 @@ export default function SellerSpotlight() {
 
                   <div className="flex items-center gap-5 mt-6 pt-5 border-t border-onLight/8">
                     <div className="flex items-center gap-1.5">
-                      <Package size={14} className="text-onLight/40" />
+                      <Package size={14} className="text-onLight/60" />
                       <span className="text-xs text-onLight/60">{s.products} products</span>
                     </div>
                     <div className="flex items-center gap-1.5">

@@ -66,7 +66,7 @@ export default function WishlistPage() {
         <div className="flex items-end justify-between mb-8 flex-wrap gap-3">
           <div>
             <h1 className="font-display text-3xl font-semibold">Your wishlist</h1>
-            <p className="text-sm text-onLight/50 mt-1">
+            <p className="text-sm text-onLight/65 mt-1">
               {items.length === 0
                 ? 'Nothing saved yet'
                 : `${items.length} item${items.length !== 1 ? 's' : ''} saved`}
@@ -134,7 +134,7 @@ export default function WishlistPage() {
                       <button
                         onClick={() => removeItem(it)}
                         aria-label="Remove from wishlist"
-                        className="absolute top-3 right-3 size-8 rounded-full bg-white/95 backdrop-blur flex items-center justify-center text-onLight/50 hover:text-coral hover:bg-coral/10 transition-colors opacity-0 group-hover:opacity-100"
+                        className="absolute top-3 right-3 size-8 rounded-full bg-white/95 backdrop-blur flex items-center justify-center text-onLight/65 hover:text-coral hover:bg-coral/10 transition-colors opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -153,7 +153,7 @@ export default function WishlistPage() {
                           ₦{Number(it.discountPrice || it.price).toLocaleString()}
                         </span>
                         {onSale && (
-                          <span className="text-xs text-onLight/35 line-through">
+                          <span className="text-xs text-onLight/55 line-through">
                             ₦{Number(it.price).toLocaleString()}
                           </span>
                         )}

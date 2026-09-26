@@ -49,7 +49,7 @@ export default function VendorDashboard() {
     return (
       <div className="min-h-screen bg-paper">
         <Navbar />
-        <div className="container-page py-24 text-center text-onLight/50">Loading dashboard...</div>
+        <div className="container-page py-24 text-center text-onLight/65">Loading dashboard...</div>
       </div>
     )
   }
@@ -62,7 +62,7 @@ export default function VendorDashboard() {
           <h1 className="font-display text-3xl font-semibold">
             {dashboard?.storeName || 'Your shop'}
           </h1>
-          <p className="text-sm text-onLight/50 mt-1">Seller dashboard</p>
+          <p className="text-sm text-onLight/65 mt-1">Seller dashboard</p>
         </div>
 
         {/* Stats */}
@@ -81,7 +81,7 @@ export default function VendorDashboard() {
               onClick={() => setTab(t)}
               className={cn(
                 'px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors capitalize',
-                tab === t ? 'border-leaf text-leaf-dim' : 'border-transparent text-onLight/45',
+                tab === t ? 'border-leaf text-leaf-dim' : 'border-transparent text-onLight/60',
               )}
             >
               {t}
@@ -107,7 +107,7 @@ export default function VendorDashboard() {
             <div>
               <h2 className="font-display text-lg font-semibold mb-3">Order history</h2>
               {history.length === 0 ? (
-                <p className="text-sm text-onLight/45">No completed orders yet.</p>
+                <p className="text-sm text-onLight/60">No completed orders yet.</p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {history.map((o) => (
@@ -123,12 +123,12 @@ export default function VendorDashboard() {
           <div className="grid md:grid-cols-2 gap-6">
             <Panel title="Top selling products">
               {dashboard.topSellingProducts.length === 0 ? (
-                <p className="text-sm text-onLight/45">No sales yet.</p>
+                <p className="text-sm text-onLight/60">No sales yet.</p>
               ) : (
                 dashboard.topSellingProducts.map((p) => (
                   <div key={p.productId} className="flex justify-between text-sm py-2 border-b border-onLight/5 last:border-0">
                     <span className="truncate mr-3">{p.productName}</span>
-                    <span className="text-onLight/50 shrink-0">{p.unitsSold} sold · ₦{Number(p.revenue).toLocaleString()}</span>
+                    <span className="text-onLight/65 shrink-0">{p.unitsSold} sold · ₦{Number(p.revenue).toLocaleString()}</span>
                   </div>
                 ))
               )}
@@ -136,12 +136,12 @@ export default function VendorDashboard() {
 
             <Panel title="Most viewed products">
               {dashboard.topViewedProducts.length === 0 ? (
-                <p className="text-sm text-onLight/45">No views yet.</p>
+                <p className="text-sm text-onLight/60">No views yet.</p>
               ) : (
                 dashboard.topViewedProducts.map((p) => (
                   <div key={p.productId} className="flex justify-between text-sm py-2 border-b border-onLight/5 last:border-0">
                     <span className="truncate mr-3">{p.productName}</span>
-                    <span className="text-onLight/50 shrink-0 flex items-center gap-1">
+                    <span className="text-onLight/65 shrink-0 flex items-center gap-1">
                       <Eye size={12} /> {p.views}
                     </span>
                   </div>
@@ -151,7 +151,7 @@ export default function VendorDashboard() {
 
             <Panel title="Monthly revenue" className="md:col-span-2">
               {dashboard.monthlyRevenue.length === 0 ? (
-                <p className="text-sm text-onLight/45">No revenue yet.</p>
+                <p className="text-sm text-onLight/60">No revenue yet.</p>
               ) : (
                 <div className="flex items-end gap-3 h-40">
                   {dashboard.monthlyRevenue.map((m) => {
@@ -162,7 +162,7 @@ export default function VendorDashboard() {
                         <div className="w-full bg-leaf/20 rounded-t-lg relative" style={{ height: `${h}%`, minHeight: '4px' }}>
                           <div className="absolute inset-0 bg-leaf rounded-t-lg" />
                         </div>
-                        <div className="text-[10px] text-onLight/45">{m.month}</div>
+                        <div className="text-[10px] text-onLight/60">{m.month}</div>
                       </div>
                     )
                   })}
@@ -189,7 +189,7 @@ function StatCard({ icon: Icon, label, value, tone = 'leaf' }) {
         <Icon size={17} />
       </div>
       <div className="text-2xl font-display font-semibold">{value}</div>
-      <div className="text-xs text-onLight/45 mt-1">{label}</div>
+      <div className="text-xs text-onLight/60 mt-1">{label}</div>
     </div>
   )
 }
@@ -216,10 +216,10 @@ function OrderRow({ order, onAction, highlight }) {
             {order.status.replace(/_/g, ' ')}
           </span>
         </div>
-        <div className="text-xs text-onLight/50 truncate">
+        <div className="text-xs text-onLight/65 truncate">
           {order.items.map((i) => `${i.productName} × ${i.quantity}`).join(' · ')}
         </div>
-        <div className="text-xs text-onLight/40 mt-1">
+        <div className="text-xs text-onLight/60 mt-1">
           {order.deliveryName} · {order.deliveryPhone} · {order.deliveryAddress}
         </div>
       </div>

@@ -59,7 +59,7 @@ export default function FaqSection() {
                       <span className={`font-medium transition-colors ${isOpen ? 'text-leaf-dim' : 'text-onLight group-hover:text-leaf-dim'}`}>
                         {f.q}
                       </span>
-                      <span className={`shrink-0 size-8 rounded-full flex items-center justify-center border transition-colors ${isOpen ? 'border-leaf text-leaf bg-leaf/10' : 'border-onLight/15 text-onLight/50'}`}>
+                      <span className={`shrink-0 size-8 rounded-full flex items-center justify-center border transition-colors ${isOpen ? 'border-leaf text-leaf bg-leaf/10' : 'border-onLight/15 text-onLight/65'}`}>
                         {isOpen ? <Minus size={14} /> : <Plus size={14} />}
                       </span>
                     </button>

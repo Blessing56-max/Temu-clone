@@ -59,7 +59,7 @@ export default function RoleConfirmation() {
             >
               <opt.icon
                 size={22}
-                className={role === opt.id ? 'text-leaf' : 'text-onLight/40'}
+                className={role === opt.id ? 'text-leaf' : 'text-onLight/60'}
               />
               <h3 className="font-semibold mt-4 mb-1.5">{opt.title}</h3>
               <p className="text-sm text-onLight/55">{opt.desc}</p>

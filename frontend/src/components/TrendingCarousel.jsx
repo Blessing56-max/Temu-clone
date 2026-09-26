@@ -61,7 +61,7 @@ export default function TrendingCarousel({ products, autoplayMs = 4200 }) {
                   <div className="font-medium text-sm">{p.name}</div>
                   <div className="flex items-center gap-1 mt-1.5">
                     <Star size={12} className="fill-amber text-amber" />
-                    <span className="text-xs text-onLight/45">{p.rating} · {p.vendor}</span>
+                    <span className="text-xs text-onLight/60">{p.rating} · {p.vendor}</span>
                   </div>
                   <div className="mt-2">
                     <PriceTag product={p} />

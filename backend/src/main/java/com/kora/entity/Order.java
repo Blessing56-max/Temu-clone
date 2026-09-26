@@ -46,6 +46,12 @@ public class Order {
     @Column(name = "estimated_delivery")
     private Instant estimatedDelivery;
 
+    @Column(name = "paystack_reference", length = 100)
+    private String paystackReference;
+
+    @Column(name = "paystack_authorization_url", length = 500)
+    private String paystackAuthorizationUrl;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

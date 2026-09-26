@@ -43,29 +43,6 @@ public class SellerController {
     private final OrderRepository orderRepository;
     private final NotificationService notificationService;
 
-    @Transactional
-    @PostMapping("/become")
-    public ResponseEntity<UserResponse> becomeSeller(Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "User not found"));
-
-        if (user.getRole() == Role.SELLER) {
-            return ResponseEntity.ok(userMapper.toResponse(user));
-        }
-        if (user.getRole() == Role.ADMIN) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Admins cannot downgrade to seller");
-        }
-
-        user.setRole(Role.SELLER);
-        userRepository.save(user);
-
-        notificationService.notify(user, "SELLER_WELCOME",
-                "Welcome to selling on Kora",
-                "Your store is now open. Add your first product to start selling.",
-                "/vendor/products/new");
-
-        return ResponseEntity.ok(userMapper.toResponse(user));
-    }
 
     @GetMapping("/dashboard")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")

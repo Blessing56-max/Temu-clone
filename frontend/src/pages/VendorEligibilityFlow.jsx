@@ -77,7 +77,7 @@ export default function VendorEligibilityFlow() {
           className="w-full max-w-xl bg-white border border-onLight/10 rounded-3xl p-8 md:p-10"
         >
           <h1 className="font-display text-3xl font-semibold mb-1">Vendor eligibility</h1>
-          <p className="text-onLight/50 mb-8 text-sm">
+          <p className="text-onLight/65 mb-8 text-sm">
             A few details about your business, plus identity documents for verification.
           </p>
 
@@ -131,8 +131,8 @@ function FileDrop({ label, required, onFile, file }) {
         {label} {required && <span className="text-coral">*</span>}
       </span>
       <div className="flex items-center gap-3 border-2 border-dashed border-onLight/15 rounded-xl px-4 py-5 cursor-pointer hover:border-leaf/50 transition-colors">
-        <UploadCloud size={20} className="text-onLight/40 shrink-0" />
-        <span className="text-sm text-onLight/50 truncate">
+        <UploadCloud size={20} className="text-onLight/60 shrink-0" />
+        <span className="text-sm text-onLight/65 truncate">
           {file ? file.name : 'Click to upload, or drag a file here'}
         </span>
         <input

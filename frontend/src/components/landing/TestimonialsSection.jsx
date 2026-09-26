@@ -60,7 +60,7 @@ export default function TestimonialsSection() {
                   </div>
                   <div>
                     <div className="font-medium text-sm">{t.author}</div>
-                    <div className="text-xs text-onLight/45 mt-0.5">{t.role}</div>
+                    <div className="text-xs text-onLight/60 mt-0.5">{t.role}</div>
                   </div>
                 </div>
               </motion.div>

@@ -37,6 +37,21 @@ public class User {
 
     @Column(nullable = false)
     private boolean enabled;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "kyc_status", nullable = false, length = 20)
+    @Builder.Default
+    private KycStatus kycStatus = KycStatus.NOT_APPLICABLE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rent_status", nullable = false, length = 20)
+    @Builder.Default
+    private RentStatus rentStatus = RentStatus.NOT_APPLICABLE;
+
+    @Column(name = "rent_paid_until")
+    private Instant rentPaidUntil;
+
+    @Column(name = "last_rent_paid_at")
+    private Instant lastRentPaidAt;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

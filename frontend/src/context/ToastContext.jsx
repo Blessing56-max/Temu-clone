@@ -58,7 +58,7 @@ export function ToastProvider({ children }) {
                 </div>
                 <button
                   onClick={() => dismiss(t.id)}
-                  className="shrink-0 text-onLight/40 hover:text-onLight transition-colors mt-0.5"
+                  className="shrink-0 text-onLight/60 hover:text-onLight transition-colors mt-0.5"
                   aria-label="Dismiss"
                 >
                   <X size={14} />

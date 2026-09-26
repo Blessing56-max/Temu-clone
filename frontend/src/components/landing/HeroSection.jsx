@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { motion } from 'framer-motion'
 import { ArrowRight, Star } from 'lucide-react'
-import MarketplaceSearch from '@/components/landing/MarketplaceSearch'
+import SearchDropdown from '@/components/SearchDropdown'
 import ProductCubeSlider from '@/components/landing/ProductCubeSlider'
 
 const FALLBACK = [
@@ -19,17 +19,17 @@ export default function HeroSection() {
   const cubeProducts = (withImages.length >= 4 ? withImages : FALLBACK).slice(0, 4)
 
   return (
-    <section className="relative bg-ink overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-leaf/25 blur-[140px] pointer-events-none" />
-      <div className="absolute -bottom-40 right-0 w-[500px] h-[500px] rounded-full bg-canopy/40 blur-[120px] pointer-events-none" />
+    <section className="relative bg-paper dark:bg-ink overflow-hidden transition-colors">
+      {/* Ambient glow — softer on light bg, punchier on dark */}
+      <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-leaf/12 dark:bg-leaf/25 blur-[140px] pointer-events-none" />
+      <div className="absolute -bottom-40 right-0 w-[500px] h-[500px] rounded-full bg-canopy/10 dark:bg-canopy/40 blur-[120px] pointer-events-none" />
 
       <div className="container-page relative z-10 grid md:grid-cols-2 gap-8 md:gap-12 items-center py-12 md:py-20">
         <div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 text-xs font-medium text-leaf bg-leaf/15 border border-leaf/30 rounded-full px-3 py-1.5 mb-5"
+            className="inline-flex items-center gap-2 text-xs font-medium text-leaf-dim dark:text-leaf bg-leaf/15 border border-leaf/30 rounded-full px-3 py-1.5 mb-5"
           >
             <Star size={11} fill="currentColor" /> Trusted by 32,000+ shoppers
           </motion.div>
@@ -38,48 +38,53 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-onDark leading-[1.02] tracking-tight"
+            className="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-onLight dark:text-onDark leading-[1.02] tracking-tight"
           >
-            <span className="italic font-serif text-leaf">Real</span> finds.
+            <span className="italic font-serif text-leaf-dim dark:text-leaf">Real</span> finds.
             <br />
-            <span className="text-leaf">Bigger</span> savings.
+            <span className="text-leaf-dim dark:text-leaf">Bigger</span> savings.
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.25 }}
-            className="mt-5 text-onDark/70 text-base md:text-lg max-w-md leading-relaxed"
+            className="mt-5 text-onLight/70 dark:text-onDark/70 text-base md:text-lg max-w-md leading-relaxed"
           >
             Top products. Crazy deals. All in one place. Shop smart. Live better.
           </motion.p>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mt-7">
-            <MarketplaceSearch />
+            <SearchDropdown />
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-6 flex flex-wrap gap-3">
             <button
               onClick={() => navigate('/products')}
-              className="inline-flex items-center gap-2 bg-leaf text-onDark font-semibold text-sm rounded-full px-6 py-3 hover:bg-leaf-dim transition-colors"
+              className="inline-flex items-center gap-2 bg-leaf text-white font-semibold text-sm rounded-full px-6 py-3 hover:bg-leaf-dim transition-colors"
             >
               Shop now <ArrowRight size={15} />
             </button>
             <button
               onClick={() => navigate('/sell')}
-              className="inline-flex items-center gap-2 border border-onDark/25 text-onDark text-sm rounded-full px-6 py-3 hover:border-onDark/50 transition-colors"
+              className="inline-flex items-center gap-2 border border-onLight/25 dark:border-onDark/25 text-onLight dark:text-onDark text-sm rounded-full px-6 py-3 hover:border-onLight/50 dark:hover:border-onDark/50 transition-colors"
             >
               Start selling
             </button>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.65 }} className="mt-7 flex items-center gap-5 text-xs text-onDark/55">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.65 }}
+            className="mt-7 flex items-center gap-5 text-xs text-onLight/60 dark:text-onDark/55"
+          >
             <div className="flex items-center gap-1.5">
               <div className="flex">{[1,2,3,4,5].map((n) => <Star key={n} size={10} fill="currentColor" className="text-amber" />)}</div>
               <span>4.8 rating</span>
             </div>
-            <span>&middot;</span>
-            <span>Free shipping over N50k</span>
+            <span>·</span>
+            <span>Free shipping over ₦50k</span>
           </motion.div>
         </div>
 
@@ -95,7 +100,7 @@ export default function HeroSection() {
 
       {/* Handwritten annotation */}
       <div className="hidden lg:block absolute top-24 right-12 rotate-[-8deg]">
-        <div className="text-leaf font-serif italic text-lg leading-tight opacity-70">
+        <div className="text-leaf-dim dark:text-leaf font-serif italic text-lg leading-tight opacity-70">
           Your next<br />favourite<br />store is here
         </div>
         <div className="text-leaf/40 text-2xl mt-1">♡</div>

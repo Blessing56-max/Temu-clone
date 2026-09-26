@@ -117,3 +117,65 @@
     background: color-mix(in oklab, var(--color-leaf) 6%, white);
   }
 }
+
+/* ============================================================
+   ACCESSIBILITY LAYER
+   ============================================================ */
+
+/* Visible focus ring for keyboard users only (not mouse clicks) */
+*:focus-visible {
+  outline: 2px solid #3FBF6B;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button:focus-visible,
+a:focus-visible {
+  outline-offset: 3px;
+}
+
+/* Skip link — hidden until focused */
+.skip-to-content {
+  position: absolute;
+  top: -100px;
+  left: 8px;
+  z-index: 9999;
+  background: #131A15;
+  color: #F4F7F4;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: top 0.2s ease;
+}
+.skip-to-content:focus {
+  top: 12px;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Screen-reader-only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Ensure minimum 44x44 tap targets for icon-only buttons */
+button[aria-label]:not([data-no-min-size]) {
+  min-width: 36px;
+  min-height: 36px;
+}

@@ -19,7 +19,7 @@ export default function TrustBar() {
             </div>
             <div>
               <div className="text-sm font-medium leading-tight">{item.title}</div>
-              <div className="text-xs text-onLight/45 leading-tight mt-0.5">{item.sub}</div>
+              <div className="text-xs text-onLight/60 leading-tight mt-0.5">{item.sub}</div>
             </div>
           </Reveal>
         ))}

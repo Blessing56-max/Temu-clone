@@ -51,7 +51,7 @@ export default function SellerOrdersPage() {
     <SellerLayout>
       <div className="mb-8">
         <h1 className="font-display text-3xl font-semibold">Orders</h1>
-        <p className="text-sm text-onLight/50 mt-1">
+        <p className="text-sm text-onLight/65 mt-1">
           Update status so buyers see where their package is.
         </p>
       </div>
@@ -85,7 +85,7 @@ export default function SellerOrdersPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-onLight/50">Loading orders...</div>
+        <div className="text-center py-20 text-onLight/65">Loading orders...</div>
       ) : shown.length === 0 ? (
         <EmptyState
           icon={filter === 'action' ? Check : ShoppingCart}
@@ -113,7 +113,7 @@ function OrderCard({ order, onAction, busy }) {
             {order.status.replace(/_/g, ' ')}
           </span>
         </div>
-        <div className="text-xs text-onLight/45">
+        <div className="text-xs text-onLight/60">
           {new Date(order.createdAt).toLocaleString()}
         </div>
       </div>
@@ -129,7 +129,7 @@ function OrderCard({ order, onAction, busy }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm truncate">{it.productName}</div>
-                  <div className="text-xs text-onLight/45 mt-0.5">
+                  <div className="text-xs text-onLight/60 mt-0.5">
                     &#8358;{Number(it.unitPrice).toLocaleString()} × {it.quantity}
                   </div>
                 </div>
@@ -146,13 +146,13 @@ function OrderCard({ order, onAction, busy }) {
               <MapPin size={13} className="text-leaf mt-0.5 shrink-0" />
               <div>
                 <div className="font-medium text-onLight">{order.deliveryName}</div>
-                <div className="text-onLight/50 mt-0.5">{order.deliveryPhone}</div>
-                <div className="text-onLight/50 mt-1 leading-relaxed">{order.deliveryAddress}</div>
+                <div className="text-onLight/65 mt-0.5">{order.deliveryPhone}</div>
+                <div className="text-onLight/65 mt-1 leading-relaxed">{order.deliveryAddress}</div>
               </div>
             </div>
             <div className="flex items-center gap-2 pt-3 mt-3 border-t border-onLight/8">
-              <Clock size={12} className="text-onLight/40" />
-              <span className="text-onLight/50">
+              <Clock size={12} className="text-onLight/60" />
+              <span className="text-onLight/65">
                 Est. {new Date(order.estimatedDelivery).toLocaleDateString()}
               </span>
             </div>
@@ -180,7 +180,7 @@ function OrderCard({ order, onAction, busy }) {
             />
           )}
           {['SHIPPED', 'OUT_FOR_DELIVERY'].includes(order.status) && (
-            <div className="text-xs text-onLight/50 flex items-center gap-1.5">
+            <div className="text-xs text-onLight/65 flex items-center gap-1.5">
               <Truck size={13} className="text-canopy" />
               Package in transit — admin will mark delivered
             </div>

@@ -6,6 +6,7 @@ import SellerLayout from '@/components/seller/SellerLayout'
 import ProductThumb from '@/components/ProductThumb'
 import { api } from '@/lib/api'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import EmptyState from '@/components/ui/EmptyState'
 
 export default function SellerProductsPage() {
@@ -33,7 +34,7 @@ export default function SellerProductsPage() {
       <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <div>
           <h1 className="font-display text-3xl font-semibold">Your products</h1>
-          <p className="text-sm text-onLight/50 mt-1">
+          <p className="text-sm text-onLight/65 mt-1">
             {loading ? 'Loading...' : `${products.length} product${products.length !== 1 ? 's' : ''} listed`}
           </p>
         </div>
@@ -82,12 +83,12 @@ export default function SellerProductsPage() {
               </div>
               <div className="p-4 flex-1 flex flex-col">
                 <div className="font-medium text-sm line-clamp-2">{p.name}</div>
-                <div className="text-xs text-onLight/45 mt-1">{p.categoryName || '—'}</div>
+                <div className="text-xs text-onLight/60 mt-1">{p.categoryName || '—'}</div>
                 <div className="flex items-center justify-between mt-3">
                   <span className="font-semibold text-sm">
                     &#8358;{Number(p.discountPrice || p.price).toLocaleString()}
                   </span>
-                  <span className="text-xs text-onLight/50">Stock: {p.stock}</span>
+                  <span className="text-xs text-onLight/65">Stock: {p.stock}</span>
                 </div>
                 <div className="flex gap-2 mt-4 pt-3 border-t border-onLight/8">
                   <Link to={`/products/${p.id}`} className="flex-1">

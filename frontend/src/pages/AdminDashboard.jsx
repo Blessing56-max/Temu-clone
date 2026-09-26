@@ -8,6 +8,9 @@ import {
   ArrowRight, Crown, UserCheck
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import AdminKycQueue from '@/pages/admin/AdminKycQueue'
+import AdminWithdrawalsQueue from '@/pages/admin/AdminWithdrawalsQueue'
+import AdminRentOverview from '@/pages/admin/AdminRentOverview'
 import { cn } from '@/lib/utils'
 
 const ROLE_STYLES = {
@@ -123,7 +126,7 @@ export default function AdminDashboard() {
       <div className="container-page py-8 md:py-10">
         <div className="mb-8">
           <h1 className="font-display text-2xl md:text-3xl font-semibold">Admin Console</h1>
-          <p className="text-sm text-onLight/50 mt-1">Platform oversight and moderation</p>
+          <p className="text-sm text-onLight/65 mt-1">Platform oversight and moderation</p>
         </div>
 
         {/* Quick actions */}
@@ -155,13 +158,16 @@ export default function AdminDashboard() {
             { id: 'overview', label: 'Overview' },
             { id: 'users', label: 'Users', badge: stats?.totalUsers },
             { id: 'audit', label: 'Audit log' },
+            { id: 'kyc', label: 'KYC review' },
+            { id: 'withdrawals', label: 'Withdrawals' },
+            { id: 'rent', label: 'Rent' },
           ].map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
                 'px-4 py-3 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors flex items-center gap-2',
-                tab === t.id ? 'border-leaf text-leaf-dim' : 'border-transparent text-onLight/45 hover:text-onLight',
+                tab === t.id ? 'border-leaf text-leaf-dim' : 'border-transparent text-onLight/60 hover:text-onLight',
               )}
             >
               {t.label}
@@ -181,14 +187,14 @@ export default function AdminDashboard() {
                 <div key={a.id} className="flex justify-between gap-3 py-2.5 border-b border-onLight/5 last:border-0">
                   <div className="min-w-0">
                     <div className="text-xs font-medium truncate">{a.action.replace(/_/g, ' ')}</div>
-                    <div className="text-[11px] text-onLight/45 truncate mt-0.5">{a.actorEmail || 'system'}</div>
+                    <div className="text-[11px] text-onLight/60 truncate mt-0.5">{a.actorEmail || 'system'}</div>
                   </div>
-                  <div className="text-[10px] text-onLight/35 shrink-0">
+                  <div className="text-[10px] text-onLight/55 shrink-0">
                     {new Date(a.createdAt).toLocaleDateString()}
                   </div>
                 </div>
               ))}
-              {auditLogs.length === 0 && <p className="text-sm text-onLight/45">No activity yet.</p>}
+              {auditLogs.length === 0 && <p className="text-sm text-onLight/60">No activity yet.</p>}
             </Panel>
 
             <Panel title="Platform pulse">
@@ -205,7 +211,7 @@ export default function AdminDashboard() {
           <div>
             <div className="flex flex-wrap gap-3 mb-4">
               <div className="relative flex-1 min-w-[200px]">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-onLight/35" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-onLight/55" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -231,11 +237,11 @@ export default function AdminDashboard() {
 
             {filteredUsers.length === 0 ? (
               <div className="bg-white border border-onLight/10 rounded-2xl py-16 text-center">
-                <p className="text-sm text-onLight/45">No users match your filters.</p>
+                <p className="text-sm text-onLight/60">No users match your filters.</p>
               </div>
             ) : (
               <div className="bg-white border border-onLight/10 rounded-2xl overflow-hidden">
-                <div className="hidden md:grid grid-cols-[1fr_120px_100px_140px] gap-3 px-5 py-3 text-[11px] font-medium text-onLight/40 uppercase tracking-wide border-b border-onLight/8">
+                <div className="hidden md:grid grid-cols-[1fr_120px_100px_140px] gap-3 px-5 py-3 text-[11px] font-medium text-onLight/60 uppercase tracking-wide border-b border-onLight/8">
                   <span>User</span>
                   <span>Role</span>
                   <span>Status</span>
@@ -263,7 +269,7 @@ export default function AdminDashboard() {
                             {u.role === 'ADMIN' && <Crown size={12} className="text-coral" />}
                             {u.role === 'SELLER' && <ShieldCheck size={12} className="text-canopy" />}
                           </div>
-                          <div className="text-xs text-onLight/45 truncate">{u.email}</div>
+                          <div className="text-xs text-onLight/60 truncate">{u.email}</div>
                         </div>
                       </div>
                     </div>
@@ -301,7 +307,7 @@ export default function AdminDashboard() {
                           'p-2 rounded-lg transition-colors',
                           u.role === 'ADMIN'
                             ? 'text-onLight/20 cursor-not-allowed'
-                            : 'text-onLight/50 hover:bg-coral/10 hover:text-coral',
+                            : 'text-onLight/65 hover:bg-coral/10 hover:text-coral',
                         )}
                       >
                         <ShieldBan size={16} />
@@ -314,16 +320,34 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {tab === 'kyc' && (
+          <div className="mt-6">
+            <AdminKycQueue />
+          </div>
+        )}
+
+        {tab === 'withdrawals' && (
+          <div className="mt-6">
+            <AdminWithdrawalsQueue />
+          </div>
+        )}
+
+        {tab === 'rent' && (
+          <div className="mt-6">
+            <AdminRentOverview />
+          </div>
+        )}
+
         {tab === 'audit' && (
           <div className="bg-white border border-onLight/10 rounded-2xl overflow-hidden">
-            <div className="hidden md:grid grid-cols-[180px_180px_1fr_140px] gap-3 px-5 py-3 text-[11px] font-medium text-onLight/40 uppercase tracking-wide border-b border-onLight/8">
+            <div className="hidden md:grid grid-cols-[180px_180px_1fr_140px] gap-3 px-5 py-3 text-[11px] font-medium text-onLight/60 uppercase tracking-wide border-b border-onLight/8">
               <span>Action</span>
               <span>Actor</span>
               <span>Details</span>
               <span>When</span>
             </div>
             {auditLogs.length === 0 ? (
-              <div className="text-center py-16 text-sm text-onLight/45">No audit entries yet.</div>
+              <div className="text-center py-16 text-sm text-onLight/60">No audit entries yet.</div>
             ) : (
               auditLogs.map((a) => (
                 <div
@@ -340,9 +364,9 @@ export default function AdminDashboard() {
                   )}>
                     {a.action.replace(/_/g, ' ')}
                   </span>
-                  <span className="text-xs text-onLight/50 truncate">{a.actorEmail || 'system'}</span>
+                  <span className="text-xs text-onLight/65 truncate">{a.actorEmail || 'system'}</span>
                   <span className="text-xs text-onLight/60 truncate">{a.metadata || `${a.targetType} #${a.targetId}`}</span>
-                  <span className="text-xs text-onLight/40">{new Date(a.createdAt).toLocaleString()}</span>
+                  <span className="text-xs text-onLight/60">{new Date(a.createdAt).toLocaleString()}</span>
                 </div>
               ))
             )}
@@ -366,8 +390,8 @@ function Stat({ icon: Icon, label, value, sub, tone = 'leaf' }) {
         <Icon size={16} />
       </div>
       <div className="font-display text-xl md:text-2xl font-semibold leading-tight">{value}</div>
-      <div className="text-xs text-onLight/45 mt-1">{label}</div>
-      {sub && <div className="text-[10px] text-onLight/35 mt-1 truncate">{sub}</div>}
+      <div className="text-xs text-onLight/60 mt-1">{label}</div>
+      {sub && <div className="text-[10px] text-onLight/55 mt-1 truncate">{sub}</div>}
     </div>
   )
 }
@@ -385,7 +409,7 @@ function PulseRow({ icon: Icon, label, value }) {
   return (
     <div className="flex items-center justify-between py-3 border-b border-onLight/5 last:border-0">
       <div className="flex items-center gap-3">
-        <Icon size={15} className="text-onLight/40" />
+        <Icon size={15} className="text-onLight/60" />
         <span className="text-sm">{label}</span>
       </div>
       <span className="font-display font-semibold">{value}</span>

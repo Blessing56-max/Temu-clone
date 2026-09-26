@@ -4,6 +4,7 @@ import com.kora.dto.request.CheckoutRequest;
 import com.kora.dto.request.OrderStatusUpdateRequest;
 import com.kora.dto.response.OrderResponse;
 import com.kora.dto.response.OrderTrackingResponse;
+import com.kora.dto.response.PaymentInitResponse;
 import com.kora.service.OrderService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -61,6 +62,20 @@ public class OrderController {
         return orderService.getTracking(auth.getName(), id);
     }
 
+    // -------- Paystack: init + verify --------
+    @PostMapping("/{id}/paystack/init")
+    public PaymentInitResponse initPayment(@PathVariable Long id, Authentication auth) {
+        return orderService.initializePayment(auth.getName(), id);
+    }
+
+    @PostMapping("/{id}/paystack/verify")
+    public OrderResponse verifyPayment(@PathVariable Long id,
+                                        @RequestParam String reference,
+                                        Authentication auth) {
+        return orderService.verifyPayment(auth.getName(), id, reference);
+    }
+
+    // -------- Status update (seller/admin) --------
     @PutMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
     public OrderResponse updateStatus(@PathVariable Long id,

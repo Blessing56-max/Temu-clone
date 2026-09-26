@@ -6,6 +6,7 @@ import { store } from './store'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { ToastProvider } from './context/ToastContext.jsx'
+import HelpWidget from './components/HelpWidget.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -15,6 +16,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <ToastProvider>
           <BrowserRouter>
             <App />
+            <HelpWidget />
           </BrowserRouter>
         </ToastProvider>
       </Provider>

@@ -27,17 +27,23 @@ export default function Button({
   children,
   loading = false,
   disabled,
+  'aria-label': ariaLabel,
   ...props
 }) {
   const Comp = MotionSlot[as] || motion.button
   const isDisabled = disabled || loading
+
   return (
     <Comp
       whileHover={isDisabled ? {} : { y: -1 }}
       whileTap={isDisabled ? {} : { scale: 0.97 }}
-      disabled={isDisabled}
+      disabled={as === 'button' ? isDisabled : undefined}
+      aria-disabled={isDisabled}
+      aria-busy={loading}
+      aria-label={ariaLabel}
       className={cn(
         'inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors duration-200',
+        'focus-visible:outline-2 focus-visible:outline-leaf focus-visible:outline-offset-2',
         isDisabled && 'opacity-50 pointer-events-none',
         variants[variant],
         sizes[size],
@@ -45,7 +51,7 @@ export default function Button({
       )}
       {...props}
     >
-      {loading && <Spinner size={14} />}
+      {loading && <Spinner size={14} aria-hidden="true" />}
       {children}
     </Comp>
   )

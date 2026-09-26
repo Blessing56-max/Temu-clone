@@ -49,7 +49,7 @@ export default function ProductThumb({ product, className, iconSize = 32 }) {
       {src ? (
         <img
           src={src}
-          alt={product.name}
+          alt={`Product photo of ${product.name}`}
           loading="lazy"
           className="w-full h-full object-cover"
           onError={(e) => { e.currentTarget.style.display = 'none' }}

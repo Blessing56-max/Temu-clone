@@ -39,6 +39,12 @@ public class ProductController {
         return productService.getById(id);
     }
 
+    @GetMapping("/suggest")
+    public java.util.List<ProductResponse> suggest(@RequestParam String q,
+                                                    @RequestParam(defaultValue = "6") int limit) {
+        return productService.suggest(q, Math.min(limit, 10));
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
     public ResponseEntity<ProductResponse> create(@Valid @RequestBody ProductRequest req,

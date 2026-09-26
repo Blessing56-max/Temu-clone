@@ -38,7 +38,7 @@ export default function TestimonialCarousel() {
             <p className="text-xl md:text-2xl font-display text-onLight leading-snug">
               "{testimonials[index].quote}"
             </p>
-            <p className="text-sm text-onLight/45 mt-5">
+            <p className="text-sm text-onLight/60 mt-5">
               {testimonials[index].author} · {testimonials[index].role}
             </p>
           </motion.div>

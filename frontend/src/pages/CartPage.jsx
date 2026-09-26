@@ -24,7 +24,7 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-paper">
         <Navbar />
-        <div className="container-page py-24 text-center">
+        <div id="main-content" className="container-page py-24 text-center">
           <ShoppingBag size={40} className="mx-auto text-onLight/20 mb-4" />
           <p className="text-onLight/60 mb-6">Log in to view your cart.</p>
           <Button onClick={() => navigate('/login')}>Log in</Button>
@@ -45,7 +45,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-paper">
       <Navbar />
-      <div className="container-page py-14">
+      <div id="main-content" className="container-page py-14">
         <h1 className="font-display text-3xl font-semibold mb-8">Your cart</h1>
 
         {empty ? (
@@ -76,7 +76,7 @@ export default function CartPage() {
                     <Link to={`/products/${item.productId}`} className="font-medium hover:text-leaf-dim block truncate">
                       {item.productName}
                     </Link>
-                    <div className="text-sm text-onLight/50 mt-1">
+                    <div className="text-sm text-onLight/65 mt-1">
                       &#8358;{Number(item.discountPrice || item.price).toLocaleString()}
                     </div>
                     <div className="flex items-center justify-between mt-3">
@@ -91,7 +91,7 @@ export default function CartPage() {
                       </div>
                       <button
                         onClick={() => dispatch(removeCartItemApi(item.id))}
-                        className="p-2 text-onLight/40 hover:text-coral transition-colors"
+                        className="p-2 text-onLight/60 hover:text-coral transition-colors"
                       >
                         <Trash2 size={16} />
                       </button>

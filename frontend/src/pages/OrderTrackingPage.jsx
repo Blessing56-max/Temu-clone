@@ -52,7 +52,7 @@ export default function OrderTrackingPage() {
     return (
       <div className="min-h-screen bg-paper">
         <Navbar />
-        <div className="container-page py-24 text-center text-onLight/50">Loading order...</div>
+        <div className="container-page py-24 text-center text-onLight/65">Loading order...</div>
       </div>
     )
   }
@@ -70,7 +70,7 @@ export default function OrderTrackingPage() {
             <p className="text-sm text-onLight/60 mb-2">
               {error || 'Order data was empty. You may not have permission to view this order.'}
             </p>
-            <p className="text-xs text-onLight/40 mb-6">Order ID: {id}</p>
+            <p className="text-xs text-onLight/60 mb-6">Order ID: {id}</p>
             <div className="flex flex-col gap-2">
               <Link
                 to="/customer/dashboard"
@@ -80,7 +80,7 @@ export default function OrderTrackingPage() {
               </Link>
               <button
                 onClick={() => { setLoading(true); setError(null); window.location.reload() }}
-                className="text-sm text-onLight/50 hover:text-onLight transition-colors"
+                className="text-sm text-onLight/65 hover:text-onLight transition-colors"
               >
                 Try again
               </button>
@@ -98,17 +98,17 @@ export default function OrderTrackingPage() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="container-page py-12 max-w-3xl">
-        <Link to="/customer/dashboard" className="text-xs text-onLight/40 hover:text-leaf-dim">
+        <Link to="/customer/dashboard" className="text-xs text-onLight/60 hover:text-leaf-dim">
           &larr; Back to dashboard
         </Link>
 
         <div className="mt-6 mb-10">
-          <div className="text-sm text-onLight/50">Order #{order.id}</div>
+          <div className="text-sm text-onLight/65">Order #{order.id}</div>
           <h1 className="font-display text-3xl font-semibold mt-1">
             {STATUS_META[tracking.currentStatus]?.label || tracking.currentStatus}
           </h1>
           {!tracking.delivered && (
-            <p className="text-sm text-onLight/50 mt-2">
+            <p className="text-sm text-onLight/65 mt-2">
               Estimated delivery:{' '}
               {new Date(tracking.estimatedDelivery).toLocaleDateString('en-NG', {
                 weekday: 'long', month: 'long', day: 'numeric',
@@ -142,7 +142,7 @@ export default function OrderTrackingPage() {
                     transition={{ delay: i * 0.08 }}
                     className={cn(
                       'relative z-10 size-10 rounded-full flex items-center justify-center shrink-0 border-2 transition-colors',
-                      done ? 'bg-leaf border-leaf text-white' : 'bg-paper border-onLight/15 text-onLight/30',
+                      done ? 'bg-leaf border-leaf text-white' : 'bg-paper border-onLight/15 text-onLight/55',
                       isCurrent && 'ring-4 ring-leaf/20',
                     )}
                   >
@@ -150,10 +150,10 @@ export default function OrderTrackingPage() {
                   </motion.div>
 
                   <div className="pb-10 flex-1 min-w-0">
-                    <div className={cn('font-medium text-sm', done ? 'text-onLight' : 'text-onLight/40')}>
+                    <div className={cn('font-medium text-sm', done ? 'text-onLight' : 'text-onLight/60')}>
                       {meta.label}
                     </div>
-                    <div className="text-xs text-onLight/45 mt-0.5">
+                    <div className="text-xs text-onLight/60 mt-0.5">
                       {entry ? (
                         <>
                           {new Date(entry.createdAt).toLocaleString('en-NG', {
@@ -187,7 +187,7 @@ export default function OrderTrackingPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm truncate">{it.productName}</div>
-                  <div className="text-xs text-onLight/45 mt-0.5">
+                  <div className="text-xs text-onLight/60 mt-0.5">
                     Qty {it.quantity} &middot; {it.sellerName}
                   </div>
                 </div>

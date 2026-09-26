@@ -6,8 +6,6 @@ import { Store, TrendingUp, Truck, ShieldCheck, ArrowRight, AlertCircle } from '
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Button from '@/components/ui/Button'
-import { api } from '@/lib/api'
-import { loadCurrentUser } from '@/features/auth/authSlice'
 
 const PERKS = [
   { icon: Store, title: 'Your own storefront', body: 'A dedicated page for your products with your branding.' },
@@ -78,7 +76,7 @@ export default function BecomeSellerPage() {
 
             <div className="mt-9 flex flex-wrap gap-3">
               <Button size="lg" onClick={handleBecome} loading={loading} disabled={loading}>
-                {alreadySeller ? 'Go to seller dashboard' : isAuthed ? 'Open my store' : 'Get started'}
+                {alreadySeller ? 'Continue KYC' : isAuthed ? 'See why' : 'Become a seller'}
                 <ArrowRight size={15} />
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate('/products')}>
@@ -97,7 +95,7 @@ export default function BecomeSellerPage() {
             )}
 
             {!isAuthed && !error && (
-              <p className="text-xs text-onLight/45 mt-4">
+              <p className="text-xs text-onLight/60 mt-4">
                 You'll be asked to log in or create an account first.
               </p>
             )}

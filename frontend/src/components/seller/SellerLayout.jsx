@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { LayoutDashboard, Package, ShoppingCart, BarChart3, Plus, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, BarChart3, Plus, Menu, X, ShieldCheck } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -12,6 +12,8 @@ const NAV = [
   { to: '/vendor/orders', label: 'Orders', icon: ShoppingCart, badge: true },
   { to: '/vendor/products', label: 'Products', icon: Package },
   { to: '/vendor/analytics', label: 'Analytics', icon: BarChart3 },
+  { to: '/vendor/wallet', label: 'Wallet', icon: Wallet },
+  { to: '/vendor/kyc', label: 'KYC Verification', icon: ShieldCheck },
 ]
 
 export default function SellerLayout({ children }) {
@@ -20,6 +22,15 @@ export default function SellerLayout({ children }) {
   const navigate = useNavigate()
   const [pending, setPending] = useState(0)
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const kycVerified = user?.kycStatus === 'VERIFIED'
+  const kycPending  = user?.kycStatus === 'PENDING'
+  const [rent, setRent] = useState(null)
+
+  useEffect(() => {
+    if (user?.role !== 'SELLER') return
+    api.get('/seller/rent/status').then(setRent).catch(() => {})
+  }, [user])
 
   useEffect(() => {
     if (user?.role !== 'SELLER' && user?.role !== 'ADMIN') return
@@ -64,7 +75,7 @@ export default function SellerLayout({ children }) {
       </Link>
 
       <div className="px-5 py-4 border-b border-onLight/8">
-        <div className="text-xs text-onLight/45 uppercase tracking-wide">Store</div>
+        <div className="text-xs text-onLight/60 uppercase tracking-wide">Store</div>
         <div className="font-medium text-sm mt-1 truncate">{user.fullName}</div>
       </div>
 
@@ -105,7 +116,7 @@ export default function SellerLayout({ children }) {
         </Link>
         <button
           onClick={() => navigate('/')}
-          className="w-full text-xs text-onLight/50 hover:text-onLight mt-3 py-2 transition-colors"
+          className="w-full text-xs text-onLight/65 hover:text-onLight mt-3 py-2 transition-colors"
         >
           ← Back to storefront
         </button>
@@ -160,7 +171,7 @@ export default function SellerLayout({ children }) {
             >
               <button
                 onClick={() => setMobileOpen(false)}
-                className="absolute top-4 right-4 p-2 text-onLight/50"
+                className="absolute top-4 right-4 p-2 text-onLight/65"
               >
                 <X size={18} />
               </button>
@@ -169,9 +180,77 @@ export default function SellerLayout({ children }) {
           </>
         )}
       </AnimatePresence>
-
       {/* Main content */}
       <main className="flex-1 min-w-0 pt-14 md:pt-0">
+                {user?.role === 'SELLER' && rent && (rent.status === 'GRACE' || rent.status === 'LOCKED' || (rent.daysLeft <= 5 && rent.daysLeft >= 0)) && (
+          <div className="max-w-6xl mx-auto px-5 md:px-10 pt-5 md:pt-8">
+            <div className={cn(
+              'flex flex-wrap items-center justify-between gap-3 rounded-2xl p-4 border',
+              rent.status === 'LOCKED' ? 'bg-coral/10 border-coral/30' : 'bg-amber/10 border-amber/30',
+            )}>
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  'size-10 rounded-full flex items-center justify-center shrink-0',
+                  rent.status === 'LOCKED' ? 'bg-coral/20' : 'bg-amber/20',
+                )}>
+                  <AlertCircle size={18} className={rent.status === 'LOCKED' ? 'text-coral' : 'text-amber'} />
+                </div>
+                <div>
+                  <div className="font-medium text-sm">
+                    {rent.status === 'LOCKED'
+                      ? 'Store locked — rent unpaid'
+                      : rent.status === 'GRACE'
+                        ? 'Rent overdue — grace period'
+                        : `${rent.daysLeft} day${rent.daysLeft === 1 ? '' : 's'} until rent is due`}
+                  </div>
+                  <div className="text-xs text-onLight/60 mt-0.5">
+                    {rent.status === 'LOCKED'
+                      ? 'Your products are hidden. Pay rent to reactivate your store.'
+                      : `Monthly rent: ₦${Number(rent.monthlyAmount).toLocaleString()}`}
+                  </div>
+                </div>
+              </div>
+              <Link
+                to="/vendor/wallet"
+                className={cn(
+                  'text-xs font-medium text-white rounded-full px-4 py-2.5 hover:opacity-90 transition-opacity flex items-center gap-1.5 shrink-0',
+                  rent.status === 'LOCKED' ? 'bg-coral' : 'bg-amber',
+                )}
+              >
+                Pay rent <ArrowRight size={13} />
+              </Link>
+            </div>
+          </div>
+        )}
+        {user?.role === 'SELLER' && !kycVerified && (
+          <div className="max-w-6xl mx-auto px-5 md:px-10 pt-5 md:pt-8">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-amber/10 border border-amber/30 rounded-2xl p-4">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-full bg-amber/20 flex items-center justify-center shrink-0">
+                  <AlertCircle size={18} className="text-amber" />
+                </div>
+                <div>
+                  <div className="font-medium text-sm">
+                    {kycPending ? 'KYC pending review' : 'Finish KYC verification'}
+                  </div>
+                  <div className="text-xs text-onLight/60 mt-0.5">
+                    {kycPending
+                      ? 'An admin is reviewing your submission. You will be notified once approved.'
+                      : 'You cannot list products or receive payouts until your identity is verified.'}
+                  </div>
+                </div>
+              </div>
+              {!kycPending && (
+                <Link
+                  to="/vendor/kyc"
+                  className="text-xs font-medium bg-amber text-white rounded-full px-4 py-2.5 hover:opacity-90 transition-opacity flex items-center gap-1.5 shrink-0"
+                >
+                  Verify now <ArrowRight size={13} />
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
         <div className="max-w-6xl mx-auto p-5 md:p-10">{children}</div>
       </main>
     </div>

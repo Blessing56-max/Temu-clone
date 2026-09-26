@@ -5,6 +5,8 @@ import com.kora.dto.request.RegisterRequest;
 import com.kora.dto.response.AuthResponse;
 import com.kora.dto.response.UserResponse;
 import com.kora.entity.RefreshToken;
+import com.kora.entity.KycStatus;
+import com.kora.entity.RentStatus;
 import com.kora.entity.Role;
 import com.kora.entity.User;
 import com.kora.exception.ApiException;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Service
@@ -46,14 +49,27 @@ public class AuthService {
         if (userRepository.existsByEmail(req.email())) {
             throw new EmailAlreadyExistsException(req.email());
         }
+
+        // Judge feedback: one account = one role. Never both. ADMIN cannot
+        // be self-registered — only an existing admin can promote someone.
+        Role role = req.role() == null ? Role.CUSTOMER : req.role();
+        if (role == Role.ADMIN) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Admin accounts cannot be self-registered");
+        }
+
         User user = User.builder()
                 .email(req.email().toLowerCase())
                 .passwordHash(passwordEncoder.encode(req.password()))
                 .fullName(req.fullName())
                 .phone(req.phone())
-                .role(Role.CUSTOMER)
+                .role(role)
                 .emailVerified(false)
                 .enabled(true)
+                .kycStatus(role == Role.SELLER ? KycStatus.UNVERIFIED : KycStatus.NOT_APPLICABLE)
+                .rentStatus(role == Role.SELLER ? RentStatus.TRIAL : RentStatus.NOT_APPLICABLE)
+                .rentPaidUntil(role == Role.SELLER
+                        ? Instant.now().plus(30, ChronoUnit.DAYS)
+                        : null)
                 .build();
         user = userRepository.save(user);
         return issueTokens(user);

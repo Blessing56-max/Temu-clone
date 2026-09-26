@@ -32,6 +32,8 @@ public class OrderService {
     private final CartService cartService;
     private final NotificationService notificationService;
     private final com.kora.payment.PaymentService paymentService;
+    private final SellerWalletService sellerWalletService;
+    private final com.kora.paystack.PaystackService paystackService;
 
     // ---------------- CHECKOUT ----------------
     @Transactional
@@ -118,8 +120,7 @@ public class OrderService {
             }
         }
 
-        // Clear cart
-        cartService.clearCart(email);
+        // Cart is cleared after payment verifies, not on checkout.
 
         return toResponse(order);
     }
@@ -136,6 +137,11 @@ public class OrderService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Payment failed: " + result.message());
         }
         transitionTo(order, OrderStatus.PAID, "Payment confirmed (ref: " + result.transactionRef() + ")", order.getUser());
+
+        // Judge feedback: money sits in escrow until the order is delivered.
+        sellerWalletService.createEscrowForOrder(order);
+        cartService.clearCart(email);
+
         notificationService.notify(order.getUser(), "ORDER_PAID",
                 "Payment received",
                 "Your payment for order #" + order.getId() + " was confirmed. We're preparing your items.",
@@ -234,6 +240,12 @@ public class OrderService {
 
         validateTransition(order.getStatus(), req.status());
         transitionTo(order, req.status(), req.note(), actor);
+
+        // Judge feedback: seller gets paid only after delivery.
+        if (req.status() == OrderStatus.DELIVERED) {
+            sellerWalletService.releaseEscrowForOrder(order);
+        }
+
         notificationService.notify(order.getUser(), "ORDER_STATUS",
                 "Order status updated",
                 "Order #" + order.getId() + " is now " + req.status().name().replace("_", " ").toLowerCase() + ".",
@@ -294,5 +306,67 @@ public class OrderService {
                 o.getDeliveryName(), o.getDeliveryPhone(), o.getDeliveryAddress(),
                 o.getEstimatedDelivery(), items,
                 o.getCreatedAt(), o.getUpdatedAt());
+    }
+
+    // ---------------- PAYSTACK: INIT ----------------
+    @Transactional
+    public com.kora.dto.response.PaymentInitResponse initializePayment(String email, Long orderId) {
+        Order order = loadOwnOrder(email, orderId);
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Order is not awaiting payment");
+        }
+
+        String reference = "kora_" + order.getId() + "_" + java.util.UUID.randomUUID().toString().substring(0, 12);
+        String callbackUrl = "http://localhost:5173/orders/" + order.getId() + "/callback";
+
+        var init = paystackService.initializeTransaction(
+                email, order.getTotal(), reference, callbackUrl);
+
+        order.setPaystackReference(init.reference());
+        order.setPaystackAuthorizationUrl(init.authorizationUrl());
+        orderRepository.save(order);
+
+        return new com.kora.dto.response.PaymentInitResponse(
+                init.authorizationUrl(), init.reference(), paystackService.getPublicKey());
+    }
+
+    // ---------------- PAYSTACK: VERIFY ----------------
+    @Transactional
+    public OrderResponse verifyPayment(String email, Long orderId, String reference) {
+        Order order = loadOwnOrder(email, orderId);
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Order has already been paid or is not pending");
+        }
+        if (order.getPaystackReference() == null || !order.getPaystackReference().equals(reference)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Reference does not match this order");
+        }
+
+        var verified = paystackService.verifyTransaction(reference);
+        if (!"success".equalsIgnoreCase(verified.status())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Payment not successful: " + verified.gatewayResponse());
+        }
+
+        // Amount check: Paystack returns amount in kobo as BigDecimal (in some shapes) — compare as NGN
+        var expected = order.getTotal();
+        if (verified.amount() != null) {
+            var receivedNgn = verified.amount().divide(java.math.BigDecimal.valueOf(100));
+            if (receivedNgn.compareTo(expected) < 0) {
+                throw new ApiException(HttpStatus.BAD_REQUEST,
+                        "Paid amount is less than order total");
+            }
+        }
+
+        transitionTo(order, OrderStatus.PAID,
+                "Payment confirmed via Paystack (ref: " + reference + ")", order.getUser());
+        sellerWalletService.createEscrowForOrder(order);
+        cartService.clearCart(email);
+
+        notificationService.notify(order.getUser(), "ORDER_PAID",
+                "Payment received",
+                "Your payment for order #" + order.getId() + " was confirmed. We're preparing your items.",
+                "/orders/" + order.getId());
+
+        return toResponse(orderRepository.save(order));
     }
 }

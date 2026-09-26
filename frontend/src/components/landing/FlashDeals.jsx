@@ -41,7 +41,7 @@ export default function FlashDeals() {
               <h2 className="font-display text-xl md:text-2xl font-bold text-onLight">
                 Flash Deals
               </h2>
-              <p className="text-xs text-onLight/50">Limited time offers — don't miss out!</p>
+              <p className="text-xs text-onLight/65">Limited time offers — don't miss out!</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export default function FlashDeals() {
         </div>
 
         {deals.length === 0 ? (
-          <div className="text-center py-12 text-sm text-onLight/45">No deals right now.</div>
+          <div className="text-center py-12 text-sm text-onLight/60">No deals right now.</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
             {deals.map((p) => <DealCard key={p.id} product={p} />)}
@@ -102,13 +102,13 @@ function DealCard({ product }) {
           <div className="flex items-baseline gap-1.5 mt-2">
             <span className="font-bold text-sm text-coral">N{price.toLocaleString()}</span>
             {pct > 0 && (
-              <span className="text-[10px] text-onLight/40 line-through">N{original.toLocaleString()}</span>
+              <span className="text-[10px] text-onLight/60 line-through">N{original.toLocaleString()}</span>
             )}
           </div>
-          <div className="flex items-center gap-1 mt-1.5 text-[10px] text-onLight/50">
+          <div className="flex items-center gap-1 mt-1.5 text-[10px] text-onLight/65">
             <Star size={9} className="fill-amber text-amber" />
             <span>4.7</span>
-            <span className="text-onLight/30">&middot;</span>
+            <span className="text-onLight/55">&middot;</span>
             <span>120 sold</span>
           </div>
         </div>

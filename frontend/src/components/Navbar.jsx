@@ -5,6 +5,7 @@ import { ShoppingBag, User2, Heart, LogOut, LayoutDashboard, Settings, Search, P
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from './ui/Button'
 import ThemeToggle from './ThemeToggle'
+import SearchDropdown from './SearchDropdown'
 import NotificationBell from './NotificationBell'
 import { cn } from '@/lib/utils'
 import { logoutUser } from '@/features/auth/authSlice'
@@ -62,8 +63,8 @@ export default function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-onLight/8 shadow-sm">
-      <nav className="container-page flex items-center justify-between h-16 gap-4">
+    <header role="banner" className="sticky top-0 z-40 bg-white border-b border-onLight/8 shadow-sm">
+      <nav aria-label="Primary navigation" className="container-page flex items-center justify-between h-16 gap-4">
         {/* LEFT: Logo */}
         <Link to="/" className="flex flex-col items-start shrink-0 group leading-none" aria-label="Kora">
           <div className="relative flex items-start">
@@ -81,7 +82,7 @@ export default function Navbar() {
               Kora
             </span>
           </div>
-          <span className="text-[8px] font-medium text-onLight/40 tracking-[0.22em] uppercase mt-0.5">
+          <span className="text-[8px] font-medium text-onLight/60 tracking-[0.22em] uppercase mt-0.5">
             More for less
           </span>
         </Link>
@@ -99,25 +100,10 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* MIDDLE: BIG search bar */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-2xl mx-2 hidden md:block">
-          <div className="relative">
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search products, brands and categories..."
-              className="w-full h-11 pl-5 pr-14 rounded-full bg-onLight/[0.04] border-2 border-onLight/8 text-sm outline-none focus:border-leaf focus:bg-white transition-all"
-            />
-            <button
-              type="submit"
-              className="absolute right-1 top-1/2 -translate-y-1/2 size-9 rounded-full bg-leaf text-onDark hover:bg-leaf-dim transition-colors flex items-center justify-center"
-              aria-label="Search"
-            >
-              <Search size={16} strokeWidth={2.5} />
-            </button>
-          </div>
-        </form>
+        {/* MIDDLE: search with autocomplete + voice */}
+        <div className="flex-1 max-w-2xl mx-2 hidden md:block">
+          <SearchDropdown />
+        </div>
 
         {/* Mobile search icon */}
         <button
@@ -144,7 +130,7 @@ export default function Navbar() {
                   <div className="text-[11px] font-medium text-onLight truncate max-w-[80px]">
                     {user?.fullName?.split(' ')[0]}
                   </div>
-                  <div className="text-[10px] text-onLight/45">Account</div>
+                  <div className="text-[10px] text-onLight/60">Account</div>
                 </div>
               </button>
               <AnimatePresence>
@@ -158,7 +144,7 @@ export default function Navbar() {
                   >
                     <div className="px-4 py-3 border-b border-onLight/8">
                       <div className="text-sm font-medium truncate">{user?.fullName}</div>
-                      <div className="text-xs text-onLight/45 truncate mt-0.5">{user?.email}</div>
+                      <div className="text-xs text-onLight/60 truncate mt-0.5">{user?.email}</div>
                       <div className="text-[10px] font-semibold uppercase tracking-wide text-leaf-dim mt-1">{user?.role}</div>
                     </div>
                     <div className="py-1">
@@ -183,7 +169,7 @@ export default function Navbar() {
               <User2 size={19} className="text-onLight/70" strokeWidth={1.75} />
               <div className="hidden lg:block text-left leading-tight">
                 <div className="text-[11px] font-medium">Sign in / Register</div>
-                <div className="text-[10px] text-onLight/45">Orders & Account</div>
+                <div className="text-[10px] text-onLight/60">Orders & Account</div>
               </div>
             </button>
           )}

@@ -105,7 +105,7 @@ export default function ProductDetailPage() {
     return (
       <div className="min-h-screen bg-paper">
         <Navbar />
-        <div className="container-page py-12">
+        <div id="main-content" className="container-page py-12">
           <div className="grid md:grid-cols-2 gap-12">
             <div className="aspect-square rounded-3xl bg-onLight/5 animate-pulse" />
             <div className="space-y-4">
@@ -131,8 +131,8 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen bg-paper">
       <Navbar />
-      <div className="container-page py-8 md:py-12">
-        <div className="text-xs text-onLight/40 mb-6">
+      <div id="main-content" className="container-page py-8 md:py-12">
+        <div className="text-xs text-onLight/60 mb-6">
           <Link to="/products" className="hover:text-leaf-dim">Products</Link>
           {product.categoryName && (
             <>
@@ -197,11 +197,11 @@ export default function ProductDetailPage() {
                 ))}
               </div>
               {avg ? (
-                <span className="text-xs text-onLight/50">
+                <span className="text-xs text-onLight/65">
                   {avg} &middot; {reviews?.totalReviews || 0} review{(reviews?.totalReviews || 0) !== 1 ? 's' : ''}
                 </span>
               ) : (
-                <span className="text-xs text-onLight/40">No reviews yet</span>
+                <span className="text-xs text-onLight/60">No reviews yet</span>
               )}
             </div>
 
@@ -252,14 +252,14 @@ export default function ProductDetailPage() {
           <div className="mb-6">
             <h2 className="font-display text-2xl font-semibold">Reviews</h2>
             {avg && (
-              <p className="text-sm text-onLight/50 mt-1">
+              <p className="text-sm text-onLight/65 mt-1">
                 {avg} ★ average &middot; {reviews?.totalReviews || 0} review{(reviews?.totalReviews || 0) !== 1 ? 's' : ''}
               </p>
             )}
           </div>
 
           {(!reviews || reviews.reviews.length === 0) ? (
-            <p className="text-sm text-onLight/45 mb-10">No reviews yet &mdash; be the first.</p>
+            <p className="text-sm text-onLight/60 mb-10">No reviews yet &mdash; be the first.</p>
           ) : (
             <div className="flex flex-col gap-4 max-w-2xl mb-10">
               {reviews.reviews.map((r) => (
@@ -270,7 +270,7 @@ export default function ProductDetailPage() {
                         <Star key={n} size={13} className={n <= r.rating ? 'fill-amber text-amber' : 'text-onLight/20'} />
                       ))}
                     </div>
-                    <span className="text-xs text-onLight/40">{r.userName}</span>
+                    <span className="text-xs text-onLight/60">{r.userName}</span>
                   </div>
                   {r.comment && <p className="text-sm text-onLight/70">{r.comment}</p>}
                 </div>
@@ -281,7 +281,7 @@ export default function ProductDetailPage() {
           {isAuthed ? (
             <div className="max-w-2xl bg-white border border-onLight/10 rounded-2xl p-6">
               <h3 className="font-display text-base font-semibold mb-2">Write a review</h3>
-              <p className="text-xs text-onLight/50 mb-5">
+              <p className="text-xs text-onLight/65 mb-5">
                 You can only review products you have purchased and received.
               </p>
 
@@ -300,7 +300,7 @@ export default function ProductDetailPage() {
                       >
                         <Star
                           size={26}
-                          className={n <= (hoverRating || rating) ? 'fill-amber text-amber' : 'text-onLight/25'}
+                          className={n <= (hoverRating || rating) ? 'fill-amber text-amber' : 'text-onLight/55'}
                         />
                       </button>
                     ))}
@@ -322,7 +322,7 @@ export default function ProductDetailPage() {
                     placeholder="What did you like or dislike? How was the quality?"
                     className="w-full px-4 py-3 rounded-xl border border-onLight/15 bg-white text-sm outline-none focus:border-leaf focus:ring-1 focus:ring-leaf resize-y"
                   />
-                  <div className="text-[10px] text-onLight/35 text-right mt-1">{comment.length}/2000</div>
+                  <div className="text-[10px] text-onLight/55 text-right mt-1">{comment.length}/2000</div>
                 </div>
 
                 {reviewError && (

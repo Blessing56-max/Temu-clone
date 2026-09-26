@@ -81,7 +81,7 @@ export default function ProductShowcase() {
         </AnimatePresence>
 
         {shown.length === 0 && (
-          <div className="text-center py-16 text-onLight/45 text-sm">Nothing here yet.</div>
+          <div className="text-center py-16 text-onLight/60 text-sm">Nothing here yet.</div>
         )}
       </div>
     </section>

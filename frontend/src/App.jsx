@@ -17,7 +17,9 @@ const CheckoutFlow = lazy(() => import('./pages/CheckoutFlow'))
 const CartPage = lazy(() => import('./pages/CartPage'))
 const WishlistPage = lazy(() => import('./pages/WishlistPage'))
 const OrderTrackingPage = lazy(() => import('./pages/OrderTrackingPage'))
+const PaymentCallback = lazy(() => import('./pages/PaymentCallback'))
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'))
+const CustomerOnboardingQuiz = lazy(() => import('./pages/CustomerOnboardingQuiz'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 const BecomeSellerPage = lazy(() => import('./pages/seller/BecomeSellerPage'))
@@ -26,10 +28,14 @@ const SellerProductsPage = lazy(() => import('./pages/seller/SellerProductsPage'
 const SellerProductFormPage = lazy(() => import('./pages/seller/SellerProductFormPage'))
 const SellerOrdersPage = lazy(() => import('./pages/seller/SellerOrdersPage'))
 const SellerAnalyticsPage = lazy(() => import('./pages/seller/SellerAnalyticsPage'))
+const KycPage = lazy(() => import('./pages/seller/KycPage'))
+const SellerWalletPage = lazy(() => import('./pages/seller/SellerWalletPage'))
 
 export default function App() {
   const location = useLocation()
   return (
+    <>
+      <a href="#main-content" className="skip-to-content">Skip to main content</a>
     <Suspense fallback={<PageLoader />}>
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
@@ -38,6 +44,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<RegistrationForm />} />
           <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+          <Route path="/onboarding/quiz" element={<CustomerOnboardingQuiz />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/orders" element={<AdminOrdersPage />} />
           <Route path="/profile" element={<ProfileCustomization />} />
@@ -47,6 +54,7 @@ export default function App() {
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/checkout" element={<CheckoutFlow />} />
           <Route path="/orders/:id" element={<OrderTrackingPage />} />
+          <Route path="/orders/:id/callback" element={<PaymentCallback />} />
           <Route path="/terms" element={<TermsAndConditions />} />
 
           {/* Seller */}
@@ -57,10 +65,13 @@ export default function App() {
           <Route path="/vendor/products/new" element={<SellerProductFormPage />} />
           <Route path="/vendor/products/:id/edit" element={<SellerProductFormPage />} />
           <Route path="/vendor/analytics" element={<SellerAnalyticsPage />} />
+          <Route path="/vendor/kyc" element={<KycPage />} />
+          <Route path="/vendor/wallet" element={<SellerWalletPage />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>
-    </Suspense>
+      </Suspense>
+    </>
   )
 }

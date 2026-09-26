@@ -4,6 +4,8 @@ import com.kora.dto.request.LoginRequest;
 import com.kora.dto.request.RegisterRequest;
 import com.kora.dto.response.AuthResponse;
 import com.kora.dto.response.UserResponse;
+import com.kora.entity.KycStatus;
+import com.kora.entity.RentStatus;
 import com.kora.entity.Role;
 import com.kora.entity.User;
 import com.kora.exception.EmailAlreadyExistsException;
@@ -48,7 +50,7 @@ class AuthServiceTest {
     @Test
     void register_savesUserAndReturnsTokens() {
         // Arrange
-        var req = new RegisterRequest("new@kora.test", "Password123!", "New User", "+234801");
+        var req = new RegisterRequest("new@kora.test", "Password123!", "New User", "+234801", Role.CUSTOMER);
         when(userRepository.existsByEmail("new@kora.test")).thenReturn(false);
         when(passwordEncoder.encode("Password123!")).thenReturn("hashed");
         when(userRepository.save(any(User.class))).thenAnswer(inv -> {
@@ -58,8 +60,7 @@ class AuthServiceTest {
         });
         when(jwtService.generateAccessToken(any(User.class))).thenReturn("access.jwt");
         when(jwtService.getAccessExpirationMs()).thenReturn(900000L);
-        var userResp = new UserResponse(1L, "new@kora.test", "New User", "+234801",
-                Role.CUSTOMER, false, Instant.now());
+        var userResp = new UserResponse(1L, "new@kora.test", "New User", "+234801", Role.CUSTOMER, false, KycStatus.NOT_APPLICABLE, RentStatus.NOT_APPLICABLE, null, Instant.now());
         when(userMapper.toResponse(any(User.class))).thenReturn(userResp);
 
         // Act
@@ -78,7 +79,7 @@ class AuthServiceTest {
     @Test
     void register_duplicateEmail_throws() {
         when(userRepository.existsByEmail("dup@kora.test")).thenReturn(true);
-        var req = new RegisterRequest("dup@kora.test", "Password123!", "Dup User", null);
+        var req = new RegisterRequest("dup@kora.test", "Password123!", "Dup User", null, Role.CUSTOMER);
 
         assertThatThrownBy(() -> authService.register(req))
                 .isInstanceOf(EmailAlreadyExistsException.class);
@@ -97,8 +98,7 @@ class AuthServiceTest {
         when(userRepository.findByEmail("nathan@kora.test")).thenReturn(java.util.Optional.of(user));
         when(jwtService.generateAccessToken(user)).thenReturn("access.jwt");
         when(jwtService.getAccessExpirationMs()).thenReturn(900000L);
-        when(userMapper.toResponse(user)).thenReturn(new UserResponse(2L, "nathan@kora.test",
-                "Nathan", null, Role.CUSTOMER, false, Instant.now()));
+        when(userMapper.toResponse(user)).thenReturn(new UserResponse(2L, "nathan@kora.test", "Nathan", null, Role.CUSTOMER, false, KycStatus.NOT_APPLICABLE, RentStatus.NOT_APPLICABLE, null, Instant.now()));
 
         var result = authService.login(new LoginRequest("nathan@kora.test", "Password123!"));
 

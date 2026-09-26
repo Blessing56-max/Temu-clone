@@ -18,7 +18,7 @@ export default function PriceTag({ product, size = 'sm' }) {
     <div className="flex items-center gap-2 flex-wrap">
       <span className={priceClass}>&#8358;{fmt(price)}</span>
       {original && (
-        <span className="text-xs text-onLight/35 line-through">&#8358;{fmt(original)}</span>
+        <span className="text-xs text-onLight/55 line-through">&#8358;{fmt(original)}</span>
       )}
     </div>
   )

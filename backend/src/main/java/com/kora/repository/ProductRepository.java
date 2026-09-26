@@ -18,6 +18,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = """
         SELECT * FROM products p
         WHERE p.active = true
+          AND EXISTS (
+            SELECT 1 FROM users u
+            WHERE u.id = p.seller_id
+              AND u.rent_status <> 'LOCKED'
+          )
           AND (:q IS NULL OR p.search_vector @@ plainto_tsquery('simple', :q))
           AND (:categoryId IS NULL OR p.category_id = :categoryId)
           AND (:minPrice IS NULL OR p.price >= :minPrice)
@@ -29,6 +34,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         countQuery = """
         SELECT count(*) FROM products p
         WHERE p.active = true
+          AND EXISTS (
+            SELECT 1 FROM users u
+            WHERE u.id = p.seller_id
+              AND u.rent_status <> 'LOCKED'
+          )
           AND (:q IS NULL OR p.search_vector @@ plainto_tsquery('simple', :q))
           AND (:categoryId IS NULL OR p.category_id = :categoryId)
           AND (:minPrice IS NULL OR p.price >= :minPrice)

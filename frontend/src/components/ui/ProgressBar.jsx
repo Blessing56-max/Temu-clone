@@ -4,7 +4,7 @@ export default function ProgressBar({ step, total }) {
   const pct = Math.round((step / total) * 100)
   return (
     <div className="w-full">
-      <div className="flex justify-between text-xs text-onLight/50 mb-2">
+      <div className="flex justify-between text-xs text-onLight/65 mb-2">
         <span>Step {step} of {total}</span>
         <span>{pct}%</span>
       </div>

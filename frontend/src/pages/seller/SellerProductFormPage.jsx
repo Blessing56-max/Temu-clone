@@ -88,11 +88,25 @@ export default function SellerProductFormPage() {
   function removeImage(url) {
     setImages((arr) => arr.filter((u) => u !== url))
   }
+  function validateDiscount(price, discount) {
+    if (!discount) return null
+    const p = Number(price)
+    const d = Number(discount)
+    if (!p || p <= 0) return 'Enter a valid original price first'
+    if (d <= 0) return 'Discount price must be greater than 0'
+    if (d >= p) return 'Discount price must be less than the original price'
+    return null
+  }
 
   async function save() {
     setError(null)
     if (!form.name || !form.price || form.stock === '') {
       setError('Name, price, and stock are required')
+      return
+    }
+    const discountError = validateDiscount(form.price, form.discountPrice)
+    if (discountError) {
+      setError(discountError)
       return
     }
     setSaving(true)
@@ -124,12 +138,12 @@ export default function SellerProductFormPage() {
   }
 
   if (loading) {
-    return <SellerLayout><div className="text-center py-20 text-onLight/50">Loading...</div></SellerLayout>
+    return <SellerLayout><div className="text-center py-20 text-onLight/65">Loading...</div></SellerLayout>
   }
 
   return (
     <SellerLayout>
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-onLight/50 hover:text-leaf mb-6">
+      <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-onLight/65 hover:text-leaf mb-6">
         <ArrowLeft size={14} /> Back
       </button>
 
@@ -205,7 +219,7 @@ export default function SellerProductFormPage() {
                     </div>
                     <div className="text-center">
                       <div className="text-sm font-medium">Click to upload images</div>
-                      <div className="text-xs text-onLight/45 mt-1">JPG, PNG, WEBP, or GIF. Max 5 MB each.</div>
+                      <div className="text-xs text-onLight/60 mt-1">JPG, PNG, WEBP, or GIF. Max 5 MB each.</div>
                     </div>
                   </>
                 )}
@@ -248,18 +262,18 @@ export default function SellerProductFormPage() {
         </div>
 
         <aside className="lg:sticky lg:top-6 h-fit">
-          <div className="text-xs text-onLight/45 uppercase tracking-wide mb-3">Preview</div>
+          <div className="text-xs text-onLight/60 uppercase tracking-wide mb-3">Preview</div>
           <div className="bg-white border border-onLight/10 rounded-2xl overflow-hidden">
             <div className="aspect-square">
               <ProductThumb product={previewProduct} />
             </div>
             <div className="p-4">
               <div className="font-medium text-sm line-clamp-2">{form.name || 'Product name'}</div>
-              <div className="text-xs text-onLight/45 mt-1">{previewProduct.categoryName || 'Category'}</div>
+              <div className="text-xs text-onLight/60 mt-1">{previewProduct.categoryName || 'Category'}</div>
               <div className="flex items-center gap-2 mt-3">
                 <span className="font-semibold">NGN {Number(form.discountPrice || form.price || 0).toLocaleString()}</span>
                 {form.discountPrice && form.price && (
-                  <span className="text-xs text-onLight/35 line-through">NGN {Number(form.price).toLocaleString()}</span>
+                  <span className="text-xs text-onLight/55 line-through">NGN {Number(form.price).toLocaleString()}</span>
                 )}
               </div>
             </div>

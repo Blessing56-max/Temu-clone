@@ -33,7 +33,7 @@ export default function CategoryShowcase() {
                     <tint.Icon size={26} className={tint.icon} strokeWidth={1.5} />
                     <div>
                       <div className="font-semibold text-sm text-onLight">{cat.name}</div>
-                      <div className="text-xs text-onLight/45 mt-0.5">{cat.count}</div>
+                      <div className="text-xs text-onLight/60 mt-0.5">{cat.count}</div>
                     </div>
                   </motion.div>
                 </Link>

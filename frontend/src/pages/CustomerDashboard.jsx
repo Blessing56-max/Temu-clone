@@ -11,6 +11,7 @@ import ProductThumb from '@/components/ProductThumb'
 import PriceTag from '@/components/PriceTag'
 import Button from '@/components/ui/Button'
 import { fetchProducts, fetchMyOrders, addToCartApi } from '@/store/slices/catalogSlice'
+import { resolveImageUrl } from '@/lib/api'
 
 const STATUS_COLORS = {
   PENDING: 'bg-amber/15 text-amber',
@@ -44,7 +45,7 @@ export default function CustomerDashboard() {
       <Navbar />
 
       <section className="relative overflow-hidden">
-        <div className="container-page py-16 md:py-20">
+        <div id="main-content" className="container-page py-16 md:py-20">
           <HeroIntro>
             <span className="text-sm font-medium text-leaf-dim uppercase tracking-wide">For you</span>
             <h1 className="font-display text-4xl md:text-5xl font-semibold mt-2 leading-tight">
@@ -67,7 +68,7 @@ export default function CustomerDashboard() {
       {/* Recent orders */}
       {orders.length > 0 && (
         <section className="bg-paper py-16">
-          <div className="container-page">
+          <div id="main-content" className="container-page">
             <div className="flex items-end justify-between mb-6">
               <h2 className="font-display text-2xl font-semibold">Your recent orders</h2>
             </div>
@@ -81,14 +82,14 @@ export default function CustomerDashboard() {
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="size-12 rounded-xl overflow-hidden bg-paper shrink-0">
                       {o.items[0]?.imageUrl && (
-                        <img src={o.items[0].imageUrl} alt="" className="w-full h-full object-cover" />
+                        <img src={resolveImageUrl(o.items[0].imageUrl)} alt="" className="w-full h-full object-cover" />
                       )}
                     </div>
                     <div className="min-w-0">
                       <div className="font-medium text-sm truncate">
                         Order #{o.id} · {o.items.length} item{o.items.length > 1 ? 's' : ''}
                       </div>
-                      <div className="text-xs text-onLight/45 mt-0.5">
+                      <div className="text-xs text-onLight/60 mt-0.5">
                         &#8358;{Number(o.total).toLocaleString()} · {new Date(o.createdAt).toLocaleDateString()}
                       </div>
                     </div>
@@ -105,7 +106,7 @@ export default function CustomerDashboard() {
 
       {/* Products */}
       <section className="bg-white py-20 border-t border-onLight/8">
-        <div className="container-page">
+        <div id="main-content" className="container-page">
           <div className="flex items-end justify-between mb-8">
             <h2 className="font-display text-3xl font-semibold">Fresh picks</h2>
             <Link to="/products" className="text-sm text-leaf-dim hover:underline hidden sm:block">
@@ -127,7 +128,7 @@ export default function CustomerDashboard() {
                   <Link to={`/products/${p.id}`} className="font-medium text-sm hover:text-leaf-dim line-clamp-2">
                     {p.name}
                   </Link>
-                  <div className="text-xs text-onLight/45 mt-0.5">{p.sellerName}</div>
+                  <div className="text-xs text-onLight/60 mt-0.5">{p.sellerName}</div>
                   <div className="flex items-center justify-between mt-3 gap-2">
                     <PriceTag product={p} />
                     <button

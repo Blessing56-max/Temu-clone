@@ -62,12 +62,12 @@ export default function AdminOrdersPage() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="container-page py-10 max-w-5xl">
-        <Link to="/admin" className="text-xs text-onLight/40 hover:text-leaf-dim">
+        <Link to="/admin" className="text-xs text-onLight/60 hover:text-leaf-dim">
           &larr; Back to admin console
         </Link>
         <div className="mt-6 mb-8">
           <h1 className="font-display text-3xl font-semibold">Order fulfillment</h1>
-          <p className="text-sm text-onLight/50 mt-1">
+          <p className="text-sm text-onLight/65 mt-1">
             Move shipped orders through delivery. Buyers get notified automatically.
           </p>
         </div>
@@ -96,7 +96,7 @@ export default function AdminOrdersPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-20 text-onLight/50">Loading orders...</div>
+          <div className="text-center py-20 text-onLight/65">Loading orders...</div>
         ) : shown.length === 0 ? (
           <EmptyState
             icon={Package}
@@ -125,7 +125,7 @@ function OrderCard({ order, onAction, busy }) {
             {order.status.replace(/_/g, ' ')}
           </span>
         </div>
-        <div className="text-xs text-onLight/45">
+        <div className="text-xs text-onLight/60">
           {new Date(order.createdAt).toLocaleString()}
         </div>
       </div>
@@ -140,7 +140,7 @@ function OrderCard({ order, onAction, busy }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm truncate">{it.productName}</div>
-                  <div className="text-xs text-onLight/45 mt-0.5">
+                  <div className="text-xs text-onLight/60 mt-0.5">
                     &#8358;{Number(it.unitPrice).toLocaleString()} &times; {it.quantity} &middot; Sold by {it.sellerName}
                   </div>
                 </div>
@@ -156,13 +156,13 @@ function OrderCard({ order, onAction, busy }) {
               <MapPin size={13} className="text-leaf mt-0.5 shrink-0" />
               <div>
                 <div className="font-medium text-onLight">{order.deliveryName}</div>
-                <div className="text-onLight/50 mt-0.5">{order.deliveryPhone}</div>
-                <div className="text-onLight/50 mt-1 leading-relaxed">{order.deliveryAddress}</div>
+                <div className="text-onLight/65 mt-0.5">{order.deliveryPhone}</div>
+                <div className="text-onLight/65 mt-1 leading-relaxed">{order.deliveryAddress}</div>
               </div>
             </div>
             <div className="flex items-center gap-2 pt-3 mt-3 border-t border-onLight/8">
-              <Clock size={12} className="text-onLight/40" />
-              <span className="text-onLight/50">
+              <Clock size={12} className="text-onLight/60" />
+              <span className="text-onLight/65">
                 Est. {new Date(order.estimatedDelivery).toLocaleDateString()}
               </span>
             </div>
@@ -199,7 +199,7 @@ function OrderCard({ order, onAction, busy }) {
             </div>
           )}
           {['PENDING', 'PAID', 'PACKED'].includes(order.status) && (
-            <div className="text-xs text-onLight/50 flex items-center gap-1.5">
+            <div className="text-xs text-onLight/65 flex items-center gap-1.5">
               Waiting on seller to mark shipped
             </div>
           )}

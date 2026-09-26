@@ -32,7 +32,7 @@ export default function ProductCard({ product, onAdd, isAuthed = true, index = 0
         >
           {product.name}
         </Link>
-        <div className="text-xs text-onLight/45 mt-1 truncate">
+        <div className="text-xs text-onLight/60 mt-1 truncate">
           {product.sellerName}
         </div>
 

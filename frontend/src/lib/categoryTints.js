@@ -7,5 +7,5 @@ export const CATEGORY_TINTS = {
   Beauty: { bg: 'bg-amber/10', icon: 'text-amber', Icon: Sparkles },
   Sports: { bg: 'bg-emerald/10', icon: 'text-emerald', Icon: Dumbbell },
   Books: { bg: 'bg-coral/10', icon: 'text-coral', Icon: BookOpen },
-  default: { bg: 'bg-onLight/5', icon: 'text-onLight/30', Icon: Package },
+  default: { bg: 'bg-onLight/5', icon: 'text-onLight/55', Icon: Package },
 }

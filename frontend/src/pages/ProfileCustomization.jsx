@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { LogOut, User, Mail, Phone, Shield, Edit3, Check, X } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Button from '@/components/ui/Button'
-import { Field, Input } from '@/components/ui/Input'
+import { Field, Input, PasswordInput } from '@/components/ui/Input'
 import { logoutUser, loadCurrentUser } from '@/features/auth/authSlice'
 import { api } from '@/lib/api'
 
@@ -74,7 +74,7 @@ export default function ProfileCustomization() {
             </div>
             <div className="flex-1">
               <h1 className="font-display text-2xl font-semibold">{user?.fullName}</h1>
-              <div className="text-sm text-onLight/50 mt-0.5">{user?.email}</div>
+              <div className="text-sm text-onLight/65 mt-0.5">{user?.email}</div>
               <div className="text-xs font-semibold uppercase tracking-wide text-leaf-dim mt-1">{user?.role}</div>
             </div>
           </div>
@@ -98,7 +98,7 @@ export default function ProfileCustomization() {
                 </button>
               ) : (
                 <div className="flex items-center gap-2">
-                  <button onClick={() => { setEditing(false); setForm({ fullName: user.fullName, phone: user.phone || '' }) }} className="text-xs text-onLight/50 flex items-center gap-1">
+                  <button onClick={() => { setEditing(false); setForm({ fullName: user.fullName, phone: user.phone || '' }) }} className="text-xs text-onLight/65 flex items-center gap-1">
                     <X size={12} /> Cancel
                   </button>
                   <button onClick={saveProfile} disabled={saving} className="text-xs font-medium text-leaf-dim flex items-center gap-1">
@@ -138,7 +138,7 @@ export default function ProfileCustomization() {
                   <Edit3 size={12} /> Change
                 </button>
               ) : (
-                <button onClick={() => setChangingPw(false)} className="text-xs text-onLight/50 flex items-center gap-1">
+                <button onClick={() => setChangingPw(false)} className="text-xs text-onLight/65 flex items-center gap-1">
                   <X size={12} /> Cancel
                 </button>
               )}
@@ -146,10 +146,10 @@ export default function ProfileCustomization() {
             {changingPw && (
               <div className="p-5 space-y-4">
                 <Field label="Current password">
-                  <Input type="password" value={pwForm.currentPassword} onChange={(e) => setPwForm((f) => ({ ...f, currentPassword: e.target.value }))} />
+                  <PasswordInput value={pwForm.currentPassword} onChange={(e) => setPwForm((f) => ({ ...f, currentPassword: e.target.value }))} />
                 </Field>
                 <Field label="New password" hint="At least 8 characters">
-                  <Input type="password" value={pwForm.newPassword} onChange={(e) => setPwForm((f) => ({ ...f, newPassword: e.target.value }))} minLength={8} />
+                  <PasswordInput value={pwForm.newPassword} onChange={(e) => setPwForm((f) => ({ ...f, newPassword: e.target.value }))} minLength={8} />
                 </Field>
                 <Button onClick={changePassword} loading={pwSaving} disabled={pwSaving}>
                   Update password
@@ -176,7 +176,7 @@ function Row({ icon: Icon, label, value }) {
         <Icon size={16} className="text-onLight/55" />
       </div>
       <div className="flex-1">
-        <div className="text-xs text-onLight/45 uppercase tracking-wide">{label}</div>
+        <div className="text-xs text-onLight/60 uppercase tracking-wide">{label}</div>
         <div className="text-sm mt-0.5">{value}</div>
       </div>
     </div>

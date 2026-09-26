@@ -107,7 +107,7 @@ export default function ProductsBrowse() {
         onClearFilters={clearAll}
       />
 
-      <div className="container-page py-8">
+      <div id="main-content" className="container-page py-8">
         {productsLoading ? (
           <ProductGridSkeleton count={12} />
         ) : displayed.length === 0 ? (
@@ -135,7 +135,7 @@ export default function ProductsBrowse() {
                 >
                   Previous
                 </button>
-                <span className="text-sm text-onLight/50 px-4">
+                <span className="text-sm text-onLight/65 px-4">
                   Page {currentPage + 1} of {totalPages}
                 </span>
                 <button

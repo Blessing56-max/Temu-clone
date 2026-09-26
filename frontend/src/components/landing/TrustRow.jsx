@@ -20,7 +20,7 @@ export default function TrustRow() {
               </div>
               <div className="leading-tight min-w-0">
                 <div className="text-xs font-semibold text-onLight truncate">{item.title}</div>
-                <div className="text-[10px] text-onLight/50 truncate">{item.sub}</div>
+                <div className="text-[10px] text-onLight/65 truncate">{item.sub}</div>
               </div>
             </div>
           ))}

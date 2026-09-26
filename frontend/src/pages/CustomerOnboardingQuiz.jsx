@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
 import { AnimatePresence, motion } from 'framer-motion'
 import Navbar from '@/components/Navbar'
 import Button from '@/components/ui/Button'
 import ProgressBar from '@/components/ui/ProgressBar'
-import { completePersonalization } from '@/features/auth/authSlice'
 import { cn } from '@/lib/utils'
 
 const categories = ['Electronics', 'Fashion', 'Home', 'Beauty', 'Books', 'Sports']
@@ -16,8 +14,7 @@ const styles = [
 ]
 
 export default function CustomerOnboardingQuiz() {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+    const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [interests, setInterests] = useState([])
   const [budget, setBudget] = useState(null)
@@ -28,7 +25,7 @@ export default function CustomerOnboardingQuiz() {
   }
 
   function finish() {
-    dispatch(completePersonalization({ interests, budgetRange: budget, shoppingStyle: style }))
+    localStorage.setItem('kora_prefs_' + (localStorage.getItem('kora_user') ? JSON.parse(localStorage.getItem('kora_user')).id : 'anon'), JSON.stringify({ interests, budgetRange: budget, shoppingStyle: style }))
     navigate('/customer/dashboard')
   }
 
@@ -54,7 +51,7 @@ export default function CustomerOnboardingQuiz() {
                 className="mt-10"
               >
                 <h2 className="font-display text-3xl font-semibold mb-2">What are you into?</h2>
-                <p className="text-onLight/50 mb-6 text-sm">Pick as many as you like.</p>
+                <p className="text-onLight/65 mb-6 text-sm">Pick as many as you like.</p>
                 <div className="grid grid-cols-2 gap-3">
                   {categories.map((c) => (
                     <button
@@ -83,7 +80,7 @@ export default function CustomerOnboardingQuiz() {
                 className="mt-10"
               >
                 <h2 className="font-display text-3xl font-semibold mb-2">What's your budget?</h2>
-                <p className="text-onLight/50 mb-6 text-sm">Typical spend per order.</p>
+                <p className="text-onLight/65 mb-6 text-sm">Typical spend per order.</p>
                 <div className="flex flex-col gap-3">
                   {budgets.map((b) => (
                     <button
@@ -112,7 +109,7 @@ export default function CustomerOnboardingQuiz() {
                 className="mt-10"
               >
                 <h2 className="font-display text-3xl font-semibold mb-2">How do you shop?</h2>
-                <p className="text-onLight/50 mb-6 text-sm">This shapes how we sort your feed.</p>
+                <p className="text-onLight/65 mb-6 text-sm">This shapes how we sort your feed.</p>
                 <div className="flex flex-col gap-3">
                   {styles.map((s) => (
                     <button
@@ -128,7 +125,7 @@ export default function CustomerOnboardingQuiz() {
                       <div className={cn('font-medium text-sm', style === s.id ? 'text-leaf' : 'text-onLight/80')}>
                         {s.label}
                       </div>
-                      <div className="text-xs text-onLight/45 mt-0.5">{s.desc}</div>
+                      <div className="text-xs text-onLight/60 mt-0.5">{s.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -137,7 +134,7 @@ export default function CustomerOnboardingQuiz() {
           </AnimatePresence>
 
           <div className="flex items-center justify-between mt-10">
-            <button onClick={finish} className="text-sm text-onLight/45 hover:text-onLight/70">
+            <button onClick={finish} className="text-sm text-onLight/60 hover:text-onLight/70">
               Skip for now
             </button>
             <Button onClick={next} size="lg">

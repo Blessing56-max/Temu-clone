@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { DollarSign, ShoppingCart, Package, Star, Eye, TrendingUp, ArrowRight, AlertCircle } from 'lucide-react'
@@ -50,7 +50,7 @@ export default function SellerDashboardPage() {
             <h1 className="font-display text-lg font-semibold">Dashboard couldn't load</h1>
           </div>
           <p className="text-sm text-onLight/60 mb-4">{error}</p>
-          <p className="text-xs text-onLight/45">This usually means the backend isn't running or you're not signed in as a seller.</p>
+          <p className="text-xs text-onLight/60">This usually means the backend isn't running or you're not signed in as a seller.</p>
           <button
             onClick={() => window.location.reload()}
             className="mt-6 text-sm font-medium bg-ink text-onDark rounded-full px-5 py-2.5 hover:bg-canopy transition-colors"
@@ -73,7 +73,7 @@ export default function SellerDashboardPage() {
     <SellerLayout>
       <div className="mb-8">
         <h1 className="font-display text-3xl font-semibold">Welcome back, {firstName}</h1>
-        <p className="text-sm text-onLight/50 mt-1">Here's how your store is doing.</p>
+        <p className="text-sm text-onLight/65 mt-1">Here's how your store is doing.</p>
       </div>
 
       {actionable.length > 0 && (
@@ -112,12 +112,12 @@ export default function SellerDashboardPage() {
       <div className="grid md:grid-cols-2 gap-5">
         <Panel title="Top selling products" icon={TrendingUp}>
           {topSelling.length === 0 ? (
-            <p className="text-sm text-onLight/45">No sales yet.</p>
+            <p className="text-sm text-onLight/60">No sales yet.</p>
           ) : topSelling.map((p) => (
             <div key={p.productId} className="flex justify-between items-center py-3 border-b border-onLight/5 last:border-0">
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium truncate">{p.productName}</div>
-                <div className="text-xs text-onLight/45 mt-0.5">{p.unitsSold} sold</div>
+                <div className="text-xs text-onLight/60 mt-0.5">{p.unitsSold} sold</div>
               </div>
               <div className="text-sm font-medium shrink-0 ml-3">₦{Number(p.revenue).toLocaleString()}</div>
             </div>
@@ -126,7 +126,7 @@ export default function SellerDashboardPage() {
 
         <Panel title="Most viewed products" icon={Eye}>
           {topViewed.length === 0 ? (
-            <p className="text-sm text-onLight/45">No views yet.</p>
+            <p className="text-sm text-onLight/60">No views yet.</p>
           ) : topViewed.map((p) => (
             <div key={p.productId} className="flex justify-between items-center py-3 border-b border-onLight/5 last:border-0">
               <div className="text-sm font-medium truncate flex-1">{p.productName}</div>
@@ -139,7 +139,7 @@ export default function SellerDashboardPage() {
 
         <Panel title="Monthly revenue" icon={DollarSign} className="md:col-span-2">
           {monthly.length === 0 ? (
-            <p className="text-sm text-onLight/45">No revenue yet.</p>
+            <p className="text-sm text-onLight/60">No revenue yet.</p>
           ) : (
             <div className="flex items-end gap-3 h-48 mt-2">
               {monthly.map((m) => {
@@ -153,7 +153,7 @@ export default function SellerDashboardPage() {
                     <div className="w-full relative bg-leaf/15 rounded-t-lg overflow-hidden" style={{ height: `${h}%`, minHeight: 6 }}>
                       <div className="absolute inset-0 bg-leaf rounded-t-lg" />
                     </div>
-                    <div className="text-[10px] text-onLight/45">{m.month}</div>
+                    <div className="text-[10px] text-onLight/60">{m.month}</div>
                   </div>
                 )
               })}
@@ -178,8 +178,8 @@ function Stat({ icon: Icon, label, value, sub, tone = 'leaf' }) {
         <Icon size={17} />
       </div>
       <div className="font-display text-2xl font-semibold">{value}</div>
-      <div className="text-xs text-onLight/45 mt-1">{label}</div>
-      {sub && <div className="text-[10px] text-onLight/35 mt-1">{sub}</div>}
+      <div className="text-xs text-onLight/60 mt-1">{label}</div>
+      {sub && <div className="text-[10px] text-onLight/55 mt-1">{sub}</div>}
     </div>
   )
 }

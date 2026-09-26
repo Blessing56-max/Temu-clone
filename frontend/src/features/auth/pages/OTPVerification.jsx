@@ -39,7 +39,7 @@ export default function OTPVerification() {
   return (
     <AuthLayout as={motion.form} onSubmit={handleSubmit} maxWidth="max-w-sm" className="text-center">
       <h1 className="font-display text-3xl font-semibold mb-2">Verify your email</h1>
-      <p className="text-onLight/50 mb-8 text-sm">
+      <p className="text-onLight/65 mb-8 text-sm">
         We sent a 6-digit code to {pendingEmail || 'your email'}.
       </p>
       <div className="flex justify-center gap-2 mb-4">

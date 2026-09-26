@@ -13,7 +13,7 @@ export default function SellerAnalyticsPage() {
   if (!data) {
     return (
       <SellerLayout>
-        <div className="text-center py-20 text-onLight/50">Loading analytics...</div>
+        <div className="text-center py-20 text-onLight/65">Loading analytics...</div>
       </SellerLayout>
     )
   }
@@ -22,7 +22,7 @@ export default function SellerAnalyticsPage() {
     <SellerLayout>
       <div className="mb-8">
         <h1 className="font-display text-3xl font-semibold">Analytics</h1>
-        <p className="text-sm text-onLight/50 mt-1">Sales performance and customer interest.</p>
+        <p className="text-sm text-onLight/65 mt-1">Sales performance and customer interest.</p>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
@@ -42,7 +42,7 @@ export default function SellerAnalyticsPage() {
           <h3 className="font-display text-sm font-semibold">Revenue by month</h3>
         </div>
         {data.monthlyRevenue.length === 0 ? (
-          <p className="text-sm text-onLight/45">No revenue data yet.</p>
+          <p className="text-sm text-onLight/60">No revenue data yet.</p>
         ) : (
           <div className="flex items-end gap-4 h-64">
             {data.monthlyRevenue.map((m) => {
@@ -56,7 +56,7 @@ export default function SellerAnalyticsPage() {
                   <div className="w-full relative bg-leaf/15 rounded-t-xl" style={{ height: `${h}%`, minHeight: 8 }}>
                     <div className="absolute inset-0 bg-gradient-to-t from-leaf to-leaf/70 rounded-t-xl" />
                   </div>
-                  <div className="text-xs text-onLight/45">{m.month}</div>
+                  <div className="text-xs text-onLight/60">{m.month}</div>
                 </div>
               )
             })}
@@ -73,7 +73,7 @@ export default function SellerAnalyticsPage() {
                 {i + 1}
               </span>
               <span className="flex-1 text-sm truncate">{p.productName}</span>
-              <span className="text-xs text-onLight/50 shrink-0">{p.unitsSold} sold</span>
+              <span className="text-xs text-onLight/65 shrink-0">{p.unitsSold} sold</span>
             </div>
           ))}
         </div>
@@ -86,7 +86,7 @@ export default function SellerAnalyticsPage() {
                 {i + 1}
               </span>
               <span className="flex-1 text-sm truncate">{p.productName}</span>
-              <span className="text-xs text-onLight/50 shrink-0 flex items-center gap-1">
+              <span className="text-xs text-onLight/65 shrink-0 flex items-center gap-1">
                 <Eye size={11} /> {p.views}
               </span>
             </div>
@@ -102,7 +102,7 @@ function Tile({ icon: Icon, label, value }) {
     <div className="bg-white border border-onLight/10 rounded-2xl p-5">
       <Icon size={17} className="text-leaf-dim mb-3" />
       <div className="font-display text-2xl font-semibold">{value}</div>
-      <div className="text-xs text-onLight/45 mt-1">{label}</div>
+      <div className="text-xs text-onLight/60 mt-1">{label}</div>
     </div>
   )
 }
