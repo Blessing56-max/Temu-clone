@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kora-backend
+  labels: { app: kora-backend }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: kora-backend }
+  template:
+    metadata:
+      labels: { app: kora-backend }
+    spec:
+      containers:
+      - name: kora-backend
+        image: kora-backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: prod
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:postgresql://kora-db:5432/kora_db
+        - name: SPRING_DATASOURCE_USERNAME
+          value: kora
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kora-db-secret
+              key: password
+        resources:
+          requests: { memory: "256Mi", cpu: "100m" }
+          limits:   { memory: "512Mi", cpu: "500m" }
+        readinessProbe:
+          httpGet: { path: /api/health, port: 8080 }
+          initialDelaySeconds: 30

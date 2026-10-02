@@ -41,6 +41,11 @@ public class OrderService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "User not found"));
 
+        // Judge feedback #2: sellers cannot buy.
+        if (user.getRole() == com.kora.entity.Role.SELLER) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Seller accounts cannot place orders. Use a buyer account.");
+        }
+
         Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Cart is empty"));
 

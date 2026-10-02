@@ -1,8 +1,7 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { motion } from 'framer-motion'
-import { Store, TrendingUp, Truck, ShieldCheck, ArrowRight, AlertCircle } from 'lucide-react'
+import { Store, TrendingUp, Truck, ShieldCheck, ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Button from '@/components/ui/Button'
@@ -15,44 +14,25 @@ const PERKS = [
 ]
 
 export default function BecomeSellerPage() {
-  const dispatch = useDispatch()
   const navigate = useNavigate()
   const user = useSelector((s) => s.auth.user)
   const isAuthed = useSelector((s) => s.auth.isAuthenticated)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-
   const alreadySeller = user?.role === 'SELLER'
+  const isBuyer = isAuthed && user?.role === 'CUSTOMER'
 
-  async function handleBecome() {
-    setError(null)
-
-    if (!isAuthed) {
-      navigate('/login?redirect=/sell')
-      return
-    }
-
+  function handleBecome() {
     if (alreadySeller) {
-      navigate('/vendor/dashboard')
+      // Already a seller — go to KYC or dashboard depending on status
+      navigate(user.kycStatus === 'VERIFIED' ? '/vendor/dashboard' : '/vendor/kyc')
       return
     }
-
-    setLoading(true)
-    try {
-      await api.post('/seller/become', {})
-      await dispatch(loadCurrentUser())
-      navigate('/vendor/dashboard')
-    } catch (e) {
-      setError(e.message || 'Could not open your store. Is the backend running?')
-    } finally {
-      setLoading(false)
-    }
+    // Buyer OR logged out — one account = one role. Must register a separate seller account.
+    navigate('/register?role=SELLER')
   }
 
   return (
     <div className="min-h-screen bg-paper flex flex-col">
       <Navbar />
-
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 market-dots" aria-hidden="true" />
         <div className="absolute -top-24 -right-24 w-[420px] h-[420px] rounded-full bg-leaf/15 blur-[100px]" />
@@ -64,19 +44,27 @@ export default function BecomeSellerPage() {
             </span>
 
             <h1 className="font-display text-4xl md:text-6xl font-semibold leading-[1.05] tracking-tight">
-              Turn what you make
-              <br />
+              Turn what you make<br />
               <span className="text-leaf-dim">into what you earn.</span>
             </h1>
 
             <p className="mt-6 text-lg text-onLight/60 max-w-xl">
-              Kora is built for independent makers and small businesses. No listing fees.
-              No algorithmic gatekeeping. Just your products in front of buyers looking for them.
+              Kora is built for independent makers and small businesses. One account = one role.
+              Register a seller account, verify your identity, and start listing.
             </p>
 
+            {isBuyer && (
+              <div className="mt-6 bg-amber/10 border border-amber/25 rounded-2xl p-4 max-w-lg">
+                <div className="text-sm font-medium text-amber">You're signed in as a buyer</div>
+                <div className="text-xs text-onLight/65 mt-1">
+                  Buyer and seller roles are separate on Kora. Click below to register a seller account.
+                </div>
+              </div>
+            )}
+
             <div className="mt-9 flex flex-wrap gap-3">
-              <Button size="lg" onClick={handleBecome} loading={loading} disabled={loading}>
-                {alreadySeller ? 'Continue KYC' : isAuthed ? 'See why' : 'Become a seller'}
+              <Button size="lg" onClick={handleBecome}>
+                {alreadySeller ? (user.kycStatus === 'VERIFIED' ? 'Go to dashboard' : 'Continue KYC') : 'Become a seller'}
                 <ArrowRight size={15} />
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate('/products')}>
@@ -84,19 +72,9 @@ export default function BecomeSellerPage() {
               </Button>
             </div>
 
-            {error && (
-              <div className="mt-6 flex items-start gap-3 bg-coral/8 border border-coral/25 rounded-2xl p-4 max-w-lg">
-                <AlertCircle size={18} className="text-coral mt-0.5 shrink-0" />
-                <div>
-                  <div className="text-sm font-medium text-coral">Couldn't open store</div>
-                  <div className="text-xs text-onLight/60 mt-1">{error}</div>
-                </div>
-              </div>
-            )}
-
-            {!isAuthed && !error && (
+            {!isAuthed && (
               <p className="text-xs text-onLight/60 mt-4">
-                You'll be asked to log in or create an account first.
+                You'll create a fresh seller account. Existing buyer accounts can't be upgraded.
               </p>
             )}
           </motion.div>
@@ -120,31 +98,8 @@ export default function BecomeSellerPage() {
               </motion.div>
             ))}
           </div>
-
-          <div className="mt-20">
-            <h2 className="font-display text-2xl font-semibold mb-8">How it works</h2>
-            <div className="space-y-5">
-              {[
-                { n: 1, title: 'Create your account', body: 'One account works for buying and selling.' },
-                { n: 2, title: 'Open your store', body: 'Click "Open my store" — takes 2 seconds.' },
-                { n: 3, title: 'Add your products', body: 'Upload photos, set prices, choose categories.' },
-                { n: 4, title: 'Get your first order', body: 'We notify you instantly. Pack, ship, done.' },
-              ].map((s) => (
-                <div key={s.n} className="flex gap-4 items-start">
-                  <div className="size-9 rounded-full bg-leaf text-onDark font-display font-semibold text-sm flex items-center justify-center shrink-0">
-                    {s.n}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{s.title}</div>
-                    <div className="text-sm text-onLight/55 mt-0.5">{s.body}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
-
       <Footer />
     </div>
   )

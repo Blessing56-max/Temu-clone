@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Upload, MapPin, Check, AlertCircle, Loader2, ShieldCheck,
   CreditCard, Building2, IdCard, ArrowRight, ArrowLeft, X, Clock
-} from 'lucide-react'
+, Eye, EyeOff } from 'lucide-react'
 import SellerLayout from '@/components/seller/SellerLayout'
 import Button from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Input'
@@ -443,6 +443,7 @@ function ImageUpload({ label, value, onChange, onError }) {
 function StatusCard({ status, onEdit }) {
   const isVerified = status.status === 'VERIFIED'
   const isPending = status.status === 'PENDING'
+  const [showAccount, setShowAccount] = useState(false)
 
   return (
     <div className="max-w-lg mx-auto text-center py-10">
@@ -472,7 +473,27 @@ function StatusCard({ status, onEdit }) {
         <ReviewRow label="Status" value={status.status} />
         <ReviewRow label="Business" value={status.businessName} />
         <ReviewRow label="Bank" value={status.bankName} />
-        <ReviewRow label="Account" value={status.accountNumberMasked} />
+        <div className="flex items-center justify-between gap-4 py-3 px-4 rounded-xl bg-white border border-onLight/10">
+          <span className="text-xs text-onLight/60 uppercase tracking-wide shrink-0">Account</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-sm tabular-nums truncate">
+              {showAccount
+                ? (status.accountNumber || status.accountNumberMasked || '—')
+                : (status.accountNumberMasked || '—')}
+            </span>
+            {status.accountNumber && (
+              <button
+                type="button"
+                onClick={() => setShowAccount((v) => !v)}
+                aria-label={showAccount ? 'Hide account number' : 'Show account number'}
+                title={showAccount ? 'Hide account number' : 'Show account number'}
+                className="shrink-0 p-1.5 rounded-lg text-onLight/60 hover:text-onLight hover:bg-onLight/5 transition-colors"
+              >
+                {showAccount ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            )}
+          </div>
+        </div>
         <ReviewRow label="Account name" value={status.accountName} />
       </div>
 

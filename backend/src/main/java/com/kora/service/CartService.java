@@ -35,9 +35,16 @@ public class CartService {
 
     @Transactional
     public CartResponse addItem(String email, CartItemRequest req) {
-        Cart cart = cartRepository.findByUserId(currentUserId(email))
-                .orElseGet(() -> cartRepository.save(Cart.builder()
-                        .user(userRepository.findByEmail(email).orElseThrow()).build()));
+        // Judge feedback #2: one account = one role. Sellers cannot buy.
+        User actor = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "User not found"));
+        if (actor.getRole() == Role.SELLER) {
+            throw new ApiException(HttpStatus.FORBIDDEN,
+                "Seller accounts cannot buy on Kora. Log in with a buyer account.");
+        }
+
+        Cart cart = cartRepository.findByUserId(actor.getId())
+                .orElseGet(() -> cartRepository.save(Cart.builder().user(actor).build()));
 
         Product product = productRepository.findById(req.productId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Product not found"));

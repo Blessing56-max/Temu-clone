@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import { motion } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import ProductThumb from '@/components/ProductThumb'
 import PriceTag from '@/components/PriceTag'
 
 export default function ProductCard({ product, onAdd, isAuthed = true, index = 0 }) {
+  const isSeller = useSelector((s) => s.auth.user?.role === 'SELLER')
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -38,7 +40,7 @@ export default function ProductCard({ product, onAdd, isAuthed = true, index = 0
 
         <div className="flex items-end justify-between mt-auto pt-3 gap-2">
           <PriceTag product={product} />
-          {isAuthed && onAdd && product.stock > 0 && (
+          {isAuthed && !isSeller && onAdd && product.stock > 0 && (
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAdd(product) }}
               className="shrink-0 size-8 rounded-full bg-ink text-onDark hover:bg-leaf transition-colors flex items-center justify-center"

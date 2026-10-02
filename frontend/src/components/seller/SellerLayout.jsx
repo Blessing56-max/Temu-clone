@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { LayoutDashboard, Package, ShoppingCart, BarChart3, Plus, Menu, X, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, BarChart3, Plus, Menu, X, ShieldCheck, AlertCircle, ArrowRight, Wallet, Store } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'

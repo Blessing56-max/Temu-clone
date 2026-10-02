@@ -10,6 +10,7 @@ public record KycStatusResponse(
     String accountName,
     String bankName,
     String accountNumberMasked,
+    String accountNumber,
     Instant submittedAt,
     Instant verifiedAt
 ) {}

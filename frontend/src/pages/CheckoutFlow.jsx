@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, ShieldCheck, Lock, Loader2, AlertCircle } from 'lucide-react'
+import { Check, ShieldCheck, Lock, Loader2, AlertCircle, CreditCard, Building2, Smartphone } from 'lucide-react'
 import PaystackPop from '@paystack/inline-js'
 import Navbar from '@/components/Navbar'
 import Button from '@/components/ui/Button'
@@ -27,6 +27,7 @@ export default function CheckoutFlow() {
   const [placedOrder, setPlacedOrder] = useState(null)
   // Keeps the order between attempts so a cancelled popup doesn't destroy progress
   const [pendingOrder, setPendingOrder] = useState(null)
+  const [paymentMethod, setPaymentMethod] = useState('card')
 
   useEffect(() => { dispatch(fetchCart()) }, [dispatch])
 
@@ -154,24 +155,72 @@ export default function CheckoutFlow() {
             )}
             {step === 2 && (
               <motion.div key="2" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="mt-8">
-                <h2 className="font-display text-2xl font-semibold mb-4">Payment</h2>
-                <div className="bg-leaf/8 border border-leaf/20 rounded-2xl p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="size-10 rounded-xl bg-leaf/15 flex items-center justify-center">
-                      <ShieldCheck size={18} className="text-leaf-dim" />
+                <h2 className="font-display text-2xl font-semibold mb-1">Payment method</h2>
+                <p className="text-sm text-onLight/60 mb-6">
+                  Pick how you'd like to pay. Paystack opens a secure window in the next step.
+                </p>
+
+                {/* Payment method tiles */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                  {[
+                    { id: 'card',     icon: CreditCard,  label: 'Card',          sub: 'Visa · Mastercard · Verve' },
+                    { id: 'transfer', icon: Building2,   label: 'Bank Transfer', sub: 'Instant NGN transfer' },
+                    { id: 'ussd',     icon: Smartphone,  label: 'USSD',          sub: '*737# and others' },
+                  ].map((m) => {
+                    const selected = paymentMethod === m.id
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(m.id)}
+                        className={
+                          'relative text-left p-4 rounded-2xl border-2 transition-colors ' +
+                          (selected
+                            ? 'border-leaf bg-leaf/5'
+                            : 'border-onLight/10 bg-white hover:border-onLight/25')
+                        }
+                      >
+                        {selected && (
+                          <span className="absolute top-3 right-3 size-5 rounded-full bg-leaf flex items-center justify-center">
+                            <Check size={12} className="text-onDark" strokeWidth={3} />
+                          </span>
+                        )}
+                        <m.icon size={22} className={selected ? 'text-leaf-dim' : 'text-onLight/50'} strokeWidth={1.75} />
+                        <div className="font-semibold text-sm mt-3">{m.label}</div>
+                        <div className="text-xs text-onLight/55 mt-0.5 leading-snug">{m.sub}</div>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Paystack trust panel */}
+                <div className="rounded-2xl border border-onLight/10 overflow-hidden">
+                  <div className="bg-[#011B33] px-5 py-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="size-8 rounded-lg bg-[#00C3F7] flex items-center justify-center">
+                        <ShieldCheck size={16} className="text-[#011B33]" strokeWidth={2.25} />
+                      </div>
+                      <div>
+                        <div className="text-white text-sm font-semibold leading-tight">Powered by Paystack</div>
+                        <div className="text-white/60 text-[10px] tracking-wide uppercase">PCI-DSS Level 1 · Licensed by CBN</div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-sm text-onLight">Secure payment</p>
-                      <p className="text-xs text-onLight/55">Powered by Paystack</p>
-                    </div>
+                    <Lock size={16} className="text-[#00C3F7] shrink-0" />
                   </div>
-                  <p className="text-sm text-onLight/65 leading-relaxed">
-                    Click <strong>Pay now</strong> and a secure Paystack window opens over this page.
-                    Pay with card, bank transfer, or USSD.
-                  </p>
-                  <div className="flex items-center gap-2 mt-5 pt-4 border-t border-leaf/20 text-xs text-onLight/55">
-                    <Lock size={12} className="text-leaf" />
-                    Card details are encrypted end-to-end and never touch Kora's servers.
+
+                  <div className="bg-white px-5 py-4 space-y-2.5 text-xs text-onLight/65">
+                    <div className="flex items-start gap-2">
+                      <span className="size-1.5 rounded-full bg-leaf mt-1.5 shrink-0" />
+                      <span>Card details go straight to Paystack — they never touch Kora's servers.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="size-1.5 rounded-full bg-leaf mt-1.5 shrink-0" />
+                      <span>Your payment is held in escrow until you confirm delivery.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="size-1.5 rounded-full bg-leaf mt-1.5 shrink-0" />
+                      <span>If anything goes wrong, funds release back to you.</span>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -219,7 +268,11 @@ export default function CheckoutFlow() {
               disabled={placing || (step === 1 && (!form.deliveryName || !form.deliveryPhone || !form.deliveryAddress)) || (step === 3 && cartEmpty)}
             >
               {placing ? <><Loader2 size={14} className="animate-spin" /> Processing...</> :
-               step < 3 ? 'Continue' : (pendingOrder ? 'Pay now' : 'Place order & pay')}
+               step < 3 ? 'Continue' : (pendingOrder
+                 ? 'Retry payment'
+                 : paymentMethod === 'card'     ? 'Pay with card'
+                 : paymentMethod === 'transfer' ? 'Pay via bank transfer'
+                 : 'Pay via USSD')}
             </Button>
           </div>
         </div>

@@ -17,9 +17,12 @@ function storeUser(user) {
 
 export const registerUser = createAsyncThunk(
   'auth/register',
-  async ({ email, password, fullName, phone }, { rejectWithValue }) => {
+  async ({ email, password, fullName, phone, role }, { rejectWithValue }) => {
     try {
-      const data = await api.post('/auth/register', { email, password, fullName, phone })
+      const data = await api.post('/auth/register', {
+        email, password, fullName, phone,
+        role: role || 'CUSTOMER',
+      })
       setTokens(data)
       return data.user
     } catch (e) { return rejectWithValue(e.message) }

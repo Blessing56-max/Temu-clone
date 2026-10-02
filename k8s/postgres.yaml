@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kora-db-pvc
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests: { storage: 1Gi }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kora-db
+spec:
+  serviceName: kora-db
+  replicas: 1
+  selector:
+    matchLabels: { app: kora-db }
+  template:
+    metadata:
+      labels: { app: kora-db }
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: kora_db
+        - name: POSTGRES_USER
+          value: kora
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kora-db-secret
+              key: password
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: kora-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kora-db
+spec:
+  selector: { app: kora-db }
+  ports:
+  - port: 5432

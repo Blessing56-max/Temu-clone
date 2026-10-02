@@ -27,6 +27,7 @@ export default function ProductDetailPage() {
   const loading = useSelector((s) => s.catalog.productLoading)
   const reviews = useSelector((s) => s.catalog.reviews[id])
   const isAuthed = useSelector((s) => s.auth.isAuthenticated)
+  const isSeller = useSelector((s) => s.auth.user?.role === 'SELLER')
 
   const [activeImg, setActiveImg] = useState(0)
   const [added, setAdded] = useState(false)
@@ -48,6 +49,10 @@ export default function ProductDetailPage() {
 
   async function handleAddToCart() {
     if (!product) return
+    if (isSeller) {
+      toast.push({ type: 'error', title: 'Seller accounts cannot buy', description: 'Log in with a buyer account to shop.' })
+      return
+    }
     if (!isAuthed) {
       toast.push({ type: 'error', title: 'Log in to buy', description: 'Create an account or sign in.' })
       return
@@ -223,9 +228,9 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Button size="lg" onClick={handleAddToCart} disabled={!canAdd}>
+              <Button size="lg" onClick={handleAddToCart} disabled={!canAdd || isSeller}>
                 <ShoppingBag size={16} />
-                {added ? 'Added to cart!' : !canAdd ? 'Out of stock' : isAuthed ? 'Add to cart' : 'Login to buy'}
+                {isSeller ? 'Seller accounts cannot buy' : added ? 'Added to cart!' : !canAdd ? 'Out of stock' : isAuthed ? 'Add to cart' : 'Login to buy'}
               </Button>
               <Button size="lg" variant="outline" onClick={handleWishlist}>
                 <Heart size={16} className={wishlisted ? 'fill-coral text-coral' : ''} />

@@ -124,7 +124,7 @@ public class SellerKycService {
 
         if (kyc == null) {
             return new KycStatusResponse(KycStatus.UNVERIFIED, null,
-                    null, null, null, null, null, null);
+                    null, null, null, null, null, null, null);
         }
         return toResponse(kyc);
     }
@@ -182,6 +182,7 @@ public class SellerKycService {
                 k.getAccountName(),
                 k.getBankName(),
                 maskAccount(k.getAccountNumber()),
+                k.getAccountNumber(),
                 k.getCreatedAt(),
                 k.getVerifiedAt()
         );
@@ -211,10 +212,17 @@ public class SellerKycService {
             throw new ApiException(HttpStatus.CONFLICT, "Only PENDING submissions can be approved");
         }
 
-        // Register the seller with Paystack now (we deferred this until admin approval)
-        String recipientCode = paystackService.createTransferRecipient(
-                kyc.getAccountName(), kyc.getAccountNumber(), kyc.getBankCode());
-        kyc.setPaystackRecipientCode(recipientCode);
+        // Register the seller with Paystack now (we deferred this until admin approval).
+        // If Paystack rejects (sandbox limitation / stale account), we still approve KYC —
+        // the recipient code can be retried when the seller requests their first withdrawal.
+        try {
+            String recipientCode = paystackService.createTransferRecipient(
+                    kyc.getAccountName(), kyc.getAccountNumber(), kyc.getBankCode());
+            kyc.setPaystackRecipientCode(recipientCode);
+        } catch (Exception e) {
+            log.warn("Paystack recipient creation failed for KYC #{} — approving anyway: {}",
+                    verificationId, e.getMessage());
+        }
 
         kyc.setStatus(KycStatus.VERIFIED);
         kyc.setVerifiedAt(java.time.Instant.now());

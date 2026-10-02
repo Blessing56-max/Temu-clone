@@ -54,6 +54,20 @@ export default function SellerProductFormPage() {
 
   function update(k, v) { setForm((f) => ({ ...f, [k]: v })) }
 
+  // Live validation — updates as the user types
+  const discountError = (() => {
+    if (!form.discountPrice) return null
+    const p = Number(form.price)
+    const d = Number(form.discountPrice)
+    if (!p || p <= 0) return 'Enter a valid original price first'
+    if (d <= 0) return 'Discount price must be greater than 0'
+    if (d >= p) return 'Discount price must be less than the original price'
+    return null
+  })()
+
+  // Discount is applied only when it is actually a discount
+  const effectiveDiscount = discountError ? null : form.discountPrice
+
   async function handleFiles(files) {
     if (!files || files.length === 0) return
     setUploading(true)
@@ -132,7 +146,7 @@ export default function SellerProductFormPage() {
   }
 
   const previewProduct = {
-    name: form.name, price: form.price, discountPrice: form.discountPrice,
+    name: form.name, price: form.price, discountPrice: effectiveDiscount,
     categoryName: categories.find((c) => String(c.id) === String(form.categoryId))?.name,
     images: images.map((url, i) => ({ url, position: i })),
   }
@@ -171,8 +185,18 @@ export default function SellerProductFormPage() {
               <Field label="Price (NGN)">
                 <Input type="number" value={form.price} onChange={(e) => update('price', e.target.value)} placeholder="45000" />
               </Field>
-              <Field label="Discount price (NGN)" hint="Leave blank if no discount">
-                <Input type="number" value={form.discountPrice} onChange={(e) => update('discountPrice', e.target.value)} placeholder="38000" />
+              <Field
+                label="Discount price (NGN)"
+                hint={discountError ? undefined : 'Leave blank if no discount'}
+                error={discountError}
+              >
+                <Input
+                  type="number"
+                  value={form.discountPrice}
+                  onChange={(e) => update('discountPrice', e.target.value)}
+                  placeholder="38000"
+                  className={discountError ? 'border-coral focus:border-coral focus:ring-coral' : ''}
+                />
               </Field>
             </div>
 
@@ -251,7 +275,7 @@ export default function SellerProductFormPage() {
             {error && <p className="text-sm text-coral">{error}</p>}
 
             <div className="flex gap-3 pt-4 border-t border-onLight/8">
-              <Button onClick={save} loading={saving} disabled={saving}>
+              <Button onClick={save} loading={saving} disabled={saving || !!discountError}>
                 {isEdit ? 'Save changes' : 'Publish product'}
               </Button>
               <Button variant="outline" onClick={() => navigate('/vendor/products')} disabled={saving}>
@@ -271,9 +295,12 @@ export default function SellerProductFormPage() {
               <div className="font-medium text-sm line-clamp-2">{form.name || 'Product name'}</div>
               <div className="text-xs text-onLight/60 mt-1">{previewProduct.categoryName || 'Category'}</div>
               <div className="flex items-center gap-2 mt-3">
-                <span className="font-semibold">NGN {Number(form.discountPrice || form.price || 0).toLocaleString()}</span>
-                {form.discountPrice && form.price && (
+                <span className="font-semibold">NGN {Number(effectiveDiscount || form.price || 0).toLocaleString()}</span>
+                {effectiveDiscount && form.price && (
                   <span className="text-xs text-onLight/55 line-through">NGN {Number(form.price).toLocaleString()}</span>
+                )}
+                {discountError && (
+                  <span className="text-[10px] text-coral">(discount invalid — ignored)</span>
                 )}
               </div>
             </div>
