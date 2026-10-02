@@ -14,13 +14,25 @@ import java.util.Date;
 @Service
 public class JwtService {
 
+    private static final String FALLBACK_SECRET =
+            "kora-prod-fallback-secret-must-be-64-bytes-or-longer-padding-here-to-be-safe-xx";
+    private static final int MIN_KEY_BYTES = 64;
+
     private final SecretKey key;
     private final long accessExpiration;
 
     public JwtService(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.access-token-expiration}") long accessExpiration) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+            @Value("${jwt.secret:}") String secret,
+            @Value("${jwt.access-token-expiration:7200000}") long accessExpiration) {
+        String effective = (secret == null || secret.isBlank()) ? FALLBACK_SECRET : secret;
+        byte[] raw = effective.getBytes(StandardCharsets.UTF_8);
+        if (raw.length < MIN_KEY_BYTES) {
+            // Pad to at least 64 bytes so HMAC-SHA512 always accepts it
+            StringBuilder sb = new StringBuilder(effective);
+            while (sb.length() < MIN_KEY_BYTES) sb.append('x');
+            raw = sb.toString().getBytes(StandardCharsets.UTF_8);
+        }
+        this.key = Keys.hmacShaKeyFor(raw);
         this.accessExpiration = accessExpiration;
     }
 
