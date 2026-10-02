@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: kora-db
+    environment:
+      POSTGRES_DB: kora_db
+      POSTGRES_USER: kora
+      POSTGRES_PASSWORD: kora_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - kora-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kora -d kora_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: kora-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/kora_db
+      SPRING_DATASOURCE_USERNAME: kora
+      SPRING_DATASOURCE_PASSWORD: kora_dev_password
+      JWT_SECRET: dev-only-secret-change-in-production-minimum-256-bits-long-key-here-replace-me
+      PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY}
+      PAYSTACK_PUBLIC_KEY: ${PAYSTACK_PUBLIC_KEY}
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    container_name: kora-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  kora-db-data:
