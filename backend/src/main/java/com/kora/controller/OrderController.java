@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -85,5 +86,21 @@ public class OrderController {
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(a -> a.equals("ROLE_ADMIN"));
         return orderService.updateStatus(auth.getName(), id, req, isAdmin);
+    }
+    @PostMapping("/{id}/charge-card")
+    public com.kora.paystack.PaystackDtos.ChargeResponse.ChargeData chargeCard(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body,
+            Authentication auth) {
+        
+        com.kora.paystack.PaystackDtos.CardDetails card = new com.kora.paystack.PaystackDtos.CardDetails(
+            (String) body.get("number"), (String) body.get("cvv"),
+            (String) body.get("expiry_month"), (String) body.get("expiry_year")
+        );
+        String pin = (String) body.get("pin");
+        String otp = (String) body.get("otp");
+        String reference = (String) body.get("reference");
+
+        return orderService.chargeOrderCard(auth.getName(), id, card, pin, otp, reference);
     }
 }

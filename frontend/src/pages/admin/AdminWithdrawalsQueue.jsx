@@ -3,12 +3,14 @@ import { Wallet, Check, X } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import StatusBadge from '@/components/StatusBadge'
 import { api } from '@/lib/api'
+import { useToast } from '@/context/ToastContext'
 
 export default function AdminWithdrawalsQueue() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState(null)
   const [filter, setFilter] = useState('PENDING')
+  const toast = useToast()
 
   async function load() {
     try {
@@ -21,10 +23,16 @@ export default function AdminWithdrawalsQueue() {
   useEffect(() => { load() }, [filter])
 
   async function approve(id) {
-    if (!confirm('Approve this payout? Paystack Transfer will fire immediately.')) return
+    if (!window.confirm('Approve this payout? Paystack Transfer will fire immediately.')) return
     setBusyId(id)
-    try { await api.post('/admin/withdrawals/' + id + '/approve', {}); await load() }
-    catch (e) { alert(e.message) }
+    try { 
+      await api.post('/admin/withdrawals/' + id + '/approve', {}); 
+      toast.push({ type: 'success', title: 'Withdrawal Approved', description: 'Transfer initiated.' })
+      await load() 
+    }
+    catch (e) { 
+      toast.push({ type: 'error', title: 'Approval failed', description: e.message }) 
+    }
     finally { setBusyId(null) }
   }
 
@@ -32,8 +40,14 @@ export default function AdminWithdrawalsQueue() {
     const reason = prompt('Reason for rejection:')
     if (!reason) return
     setBusyId(id)
-    try { await api.post('/admin/withdrawals/' + id + '/reject', { reason }); await load() }
-    catch (e) { alert(e.message) }
+    try { 
+      await api.post('/admin/withdrawals/' + id + '/reject', { reason }); 
+      toast.push({ type: 'success', title: 'Withdrawal Rejected', description: 'Seller has been notified.' })
+      await load() 
+    }
+    catch (e) { 
+      toast.push({ type: 'error', title: 'Rejection failed', description: e.message }) 
+    }
     finally { setBusyId(null) }
   }
 
@@ -62,7 +76,7 @@ export default function AdminWithdrawalsQueue() {
           <p className="text-sm text-onLight/60">No {filter.toLowerCase()} withdrawals.</p>
         </div>
       ) : (
-        <div className="bg-white border border-onLight/10 rounded-2xl overflow-hidden">
+        <div className="bg-white border border-onLight/10 rounded-2xl overflow-x-auto">
           <div className="hidden md:grid grid-cols-[1fr_120px_140px_200px] gap-3 px-5 py-3 text-[11px] font-medium text-onLight/55 uppercase tracking-wide border-b border-onLight/8">
             <span>Seller</span><span>Amount</span><span>Status</span><span className="text-right">Actions</span>
           </div>

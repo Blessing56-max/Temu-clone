@@ -116,4 +116,32 @@ public final class PaystackDtos {
                 String status
         ) {}
     }
+    // -------- Direct Charge --------
+    public record CardDetails(
+            @JsonProperty("number") String number,
+            @JsonProperty("cvv") String cvv,
+            @JsonProperty("expiry_month") String expiryMonth,
+            @JsonProperty("expiry_year") String expiryYear
+    ) {}
+
+    public record ChargeRequest(
+            String email,
+            long amount,
+            CardDetails card,
+            @JsonProperty("pin") String pin,
+            @JsonProperty("otp") String otp,
+            @JsonProperty("reference") String reference
+    ) {}
+
+    public record ChargeResponse(
+            boolean status,
+            String message,
+            ChargeData data
+    ) {
+        public record ChargeData(
+                String status, // send_pin, send_otp, success, failed
+                String reference,
+                @JsonProperty("display_text") String displayText
+        ) {}
+    }
 }

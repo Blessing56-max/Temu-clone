@@ -9,10 +9,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public interface WithdrawalRepository extends JpaRepository<Withdrawal, Long> {
     Page<Withdrawal> findBySellerIdOrderByRequestedAtDesc(Long sellerId, Pageable pageable);
     Page<Withdrawal> findByStatusOrderByRequestedAtAsc(WithdrawalStatus status, Pageable pageable);
+
+    Optional<Withdrawal> findTopBySellerIdAndStatusOrderByRequestedAtDesc(Long sellerId, WithdrawalStatus status);
 
     @Query("""
         SELECT COALESCE(SUM(w.amount), 0) FROM Withdrawal w

@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { ShieldCheck, XCircle, AlertCircle } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { api } from '@/lib/api'
+import { useToast } from '@/context/ToastContext'
 
 export default function AdminKycQueue() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState(null)
+  const toast = useToast()
 
   async function load() {
     try {
@@ -19,10 +21,16 @@ export default function AdminKycQueue() {
   useEffect(() => { load() }, [])
 
   async function approve(id) {
-    if (!confirm('Approve this seller? They will be able to list products and receive payouts.')) return
+    if (!window.confirm('Approve this seller? They will be able to list products and receive payouts.')) return
     setBusyId(id)
-    try { await api.post('/admin/kyc/' + id + '/approve', {}); await load() }
-    catch (e) { alert(e.message) }
+    try { 
+      await api.post('/admin/kyc/' + id + '/approve', {}); 
+      toast.push({ type: 'success', title: 'KYC Approved', description: 'Seller can now list products.' })
+      await load() 
+    }
+    catch (e) { 
+      toast.push({ type: 'error', title: 'Approval failed', description: e.message }) 
+    }
     finally { setBusyId(null) }
   }
 
@@ -30,8 +38,14 @@ export default function AdminKycQueue() {
     const reason = prompt('Reason for rejection:')
     if (!reason) return
     setBusyId(id)
-    try { await api.post('/admin/kyc/' + id + '/reject', { reason }); await load() }
-    catch (e) { alert(e.message) }
+    try { 
+      await api.post('/admin/kyc/' + id + '/reject', { reason }); 
+      toast.push({ type: 'success', title: 'KYC Rejected', description: 'Seller has been notified.' })
+      await load() 
+    }
+    catch (e) { 
+      toast.push({ type: 'error', title: 'Rejection failed', description: e.message }) 
+    }
     finally { setBusyId(null) }
   }
 
@@ -47,7 +61,7 @@ export default function AdminKycQueue() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 overflow-x-auto">
       {items.map((k, i) => (
         <div key={k.id || i} className="bg-white border border-onLight/10 rounded-2xl overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-onLight/8">

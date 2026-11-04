@@ -56,6 +56,14 @@ public class SellerWithdrawalService {
                 "Amount exceeds available balance (" + wallet.availableBalance() + ")");
         }
 
+        // IDEMPOTENCY: Prevent double-clicks / double-charges
+        java.util.Optional<Withdrawal> existing = withdrawalRepository.findTopBySellerIdAndStatusOrderByRequestedAtDesc(
+            seller.getId(), WithdrawalStatus.PENDING);
+        if (existing.isPresent() && existing.get().getRequestedAt().isAfter(Instant.now().minus(2, java.time.temporal.ChronoUnit.MINUTES))) {
+            throw new ApiException(HttpStatus.CONFLICT, 
+                "You already have a pending withdrawal request. Please wait for it to be processed.");
+        }
+
         Withdrawal w = Withdrawal.builder()
                 .seller(seller)
                 .amount(amount)

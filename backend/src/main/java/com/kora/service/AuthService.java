@@ -1,4 +1,5 @@
 package com.kora.service;
+
 import com.kora.dto.request.LoginRequest;
 import com.kora.dto.request.RefreshRequest;
 import com.kora.dto.request.RegisterRequest;
@@ -17,6 +18,7 @@ import com.kora.repository.RefreshTokenRepository;
 import com.kora.repository.UserRepository;
 import com.kora.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,6 +32,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -50,8 +53,6 @@ public class AuthService {
             throw new EmailAlreadyExistsException(req.email());
         }
 
-        // Judge feedback: one account = one role. Never both. ADMIN cannot
-        // be self-registered — only an existing admin can promote someone.
         Role role = req.role() == null ? Role.CUSTOMER : req.role();
         if (role == Role.ADMIN) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Admin accounts cannot be self-registered");
@@ -67,9 +68,7 @@ public class AuthService {
                 .enabled(true)
                 .kycStatus(role == Role.SELLER ? KycStatus.UNVERIFIED : KycStatus.NOT_APPLICABLE)
                 .rentStatus(role == Role.SELLER ? RentStatus.TRIAL : RentStatus.NOT_APPLICABLE)
-                .rentPaidUntil(role == Role.SELLER
-                        ? Instant.now().plus(30, ChronoUnit.DAYS)
-                        : null)
+                .rentPaidUntil(role == Role.SELLER ? Instant.now().plus(30, ChronoUnit.DAYS) : null)
                 .build();
         user = userRepository.save(user);
         return issueTokens(user);
@@ -92,9 +91,17 @@ public class AuthService {
     public AuthResponse refresh(RefreshRequest req) {
         RefreshToken rt = refreshTokenRepository.findByToken(req.refreshToken())
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
-        if (rt.isRevoked() || rt.getExpiresAt().isBefore(Instant.now())) {
-            throw new ApiException(HttpStatus.UNAUTHORIZED, "Refresh token expired or revoked");
+
+        if (rt.isRevoked()) {
+            log.warn("Security Alert: Refresh token replay detected for user {}", rt.getUser().getEmail());
+            refreshTokenRepository.revokeAllByUser(rt.getUser());
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Session compromised. Please log in again.");
         }
+
+        if (rt.getExpiresAt().isBefore(Instant.now())) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Refresh token expired");
+        }
+
         rt.setRevoked(true);
         refreshTokenRepository.save(rt);
         return issueTokens(rt.getUser());
@@ -105,7 +112,7 @@ public class AuthService {
         userRepository.findByEmail(email).ifPresent(refreshTokenRepository::revokeAllByUser);
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public UserResponse updateProfile(String email, com.kora.dto.request.UpdateProfileRequest req) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(InvalidCredentialsException::new);
@@ -115,7 +122,7 @@ public class AuthService {
         return userMapper.toResponse(user);
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void changePassword(String email, com.kora.dto.request.ChangePasswordRequest req) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(InvalidCredentialsException::new);

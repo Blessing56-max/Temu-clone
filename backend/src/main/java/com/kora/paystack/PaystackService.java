@@ -168,4 +168,27 @@ public class PaystackService {
             throw new ApiException(HttpStatus.BAD_GATEWAY, "Paystack transfer failed");
         }
     }
+    // ---------------- DIRECT CHARGE (PCI Form) ----------------
+    public PaystackDtos.ChargeResponse.ChargeData chargeCard(
+            String email, BigDecimal amountNgn, PaystackDtos.CardDetails card, 
+            String pin, String otp, String reference) {
+        long kobo = amountNgn.multiply(BigDecimal.valueOf(100)).longValue();
+        var req = new PaystackDtos.ChargeRequest(email, kobo, card, pin, otp, reference);
+        
+        try {
+            var resp = client.post()
+                    .uri("/charge")
+                    .body(req)
+                    .retrieve()
+                    .body(PaystackDtos.ChargeResponse.class);
+
+            if (resp == null || !resp.status() || resp.data() == null) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, resp != null ? resp.message() : "Charge failed");
+            }
+            return resp.data();
+        } catch (RestClientException e) {
+            log.error("Paystack chargeCard failed", e);
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Card charge failed. Check details.");
+        }
+    }
 }

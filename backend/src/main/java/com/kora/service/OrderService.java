@@ -7,6 +7,7 @@ import com.kora.entity.*;
 import com.kora.exception.ApiException;
 import com.kora.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -78,9 +80,14 @@ public class OrderService {
             BigDecimal unit = p.getDiscountPrice() != null ? p.getDiscountPrice() : p.getPrice();
             BigDecimal lineTotal = unit.multiply(BigDecimal.valueOf(ci.getQuantity()));
 
-            // Decrement stock (optimistic lock on Product.version prevents overselling)
-            p.setStock(p.getStock() - ci.getQuantity());
-            productRepository.save(p);
+            // Decrement stock with optimistic lock handling
+            try {
+                p.setStock(p.getStock() - ci.getQuantity());
+                productRepository.saveAndFlush(p); // Force the version check NOW
+            } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+                throw new ApiException(HttpStatus.CONFLICT, 
+                    "Someone just bought the last of " + p.getName() + ". Please refresh your cart.");
+            }
 
             items.add(OrderItem.builder()
                     .order(order)
@@ -373,5 +380,52 @@ public class OrderService {
                 "/orders/" + order.getId());
 
         return toResponse(orderRepository.save(order));
+    }
+    // ---------------- DIRECT CHARGE ----------------
+    @Transactional
+    public com.kora.paystack.PaystackDtos.ChargeResponse.ChargeData chargeOrderCard(
+            String email, Long orderId, com.kora.paystack.PaystackDtos.CardDetails card,
+            String pin, String otp, String reference) {
+        Order order = loadOwnOrder(email, orderId);
+        
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Order is not awaiting payment");
+        }
+        
+        String ref = reference != null ? reference : "kora_card_" + order.getId() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+
+        var result = paystackService.chargeCard(email, order.getTotal(), card, pin, otp, ref);
+        
+        if ("success".equals(result.status())) {
+            transitionTo(order, OrderStatus.PAID, "Paid via Card (Ref: " + ref + ")", order.getUser());
+            sellerWalletService.createEscrowForOrder(order);
+            cartService.clearCart(email);
+            notificationService.notify(order.getUser(), "ORDER_PAID", "Payment received", "Your card payment was confirmed.", "/orders/" + order.getId());
+        }
+        
+        return result;
+    }
+    // ---------------- WEBHOOK PAYMENT CONFIRMATION ----------------
+    @Transactional
+    public void markAsPaidFromWebhook(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            log.warn("Webhook received for order {} but status is {}", orderId, order.getStatus());
+            return; // Already processed
+        }
+
+        transitionTo(order, OrderStatus.PAID, "Payment confirmed via Paystack Webhook", order.getUser());
+        sellerWalletService.createEscrowForOrder(order);
+        cartService.clearCart(order.getUser().getEmail());
+
+        notificationService.notify(order.getUser(), "ORDER_PAID",
+                "Payment received",
+                "Your payment for order #" + order.getId() + " was confirmed securely via webhook.",
+                "/orders/" + order.getId());
+
+        orderRepository.save(order);
+        log.info("Order {} successfully marked as PAID via Webhook", orderId);
     }
 }
