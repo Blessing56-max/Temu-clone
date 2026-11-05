@@ -6,6 +6,8 @@ pipeline {
         DOCKER_HUB_REPO = 'kora-backend'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         KUBECONFIG = credentials('kubeconfig-credential')
+        DOCKER_CMD = 'C:\\Users\\pc\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
+        KUBECTL_CMD = 'C:\\Users\\pc\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\kubectl.exe'
     }
 
     stages {
@@ -26,7 +28,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 dir('backend') {
-                    bat "docker build -t ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG} ."
+                    bat "\"${env.DOCKER_CMD}\" build -t ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG} ."
                 }
             }
         }
@@ -35,9 +37,9 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', 'docker-hub-credentials') {
-                        bat "docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG}"
-                        bat "docker tag ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG} ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:latest"
-                        bat "docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:latest"
+                        bat "\"${env.DOCKER_CMD}\" push ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG}"
+                        bat "\"${env.DOCKER_CMD}\" tag ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG} ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:latest"
+                        bat "\"${env.DOCKER_CMD}\" push ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:latest"
                     }
                 }
             }
@@ -46,11 +48,9 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 dir('k8s') {
-                    // Update the image tag using PowerShell since sed is not standard on Windows
                     powershell "((Get-Content backend-deployment.yaml) -replace 'kora-backend:latest', '${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG}') | Set-Content backend-deployment.yaml"
-                    
-                    bat 'kubectl apply -f .'
-                    bat "kubectl rollout status deployment/kora-backend --timeout=120s"
+                    bat "\"${env.KUBECTL_CMD}\" apply -f ."
+                    bat "\"${env.KUBECTL_CMD}\" rollout status deployment/kora-backend --timeout=120s"
                 }
             }
         }
