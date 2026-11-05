@@ -12,7 +12,6 @@ pipeline {
         DOCKER_CMD = "${DOCKER_DIR}\\docker.exe"
         KUBECTL_CMD = "${DOCKER_DIR}\\kubectl.exe"
         
-        // CRITICAL: Add Docker to the system PATH so the Jenkins plugin can find 'docker' for login
         PATH = "${DOCKER_DIR};${env.PATH}"
     }
 
@@ -41,8 +40,10 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                script {
-                    docker.withRegistry('', 'docker-hub-credentials') {
+                // WE BYPASS THE BROKEN PLUGIN AND USE THE DOCKER CMD DIRECTLY
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                    dir('backend') {
+                        bat "\"${env.DOCKER_CMD}\" login -u %DOCKER_USER% -p %DOCKER_PASS%"
                         bat "\"${env.DOCKER_CMD}\" push ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG}"
                         bat "\"${env.DOCKER_CMD}\" tag ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG} ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:latest"
                         bat "\"${env.DOCKER_CMD}\" push ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:latest"
