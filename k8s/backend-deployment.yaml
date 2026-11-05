@@ -13,7 +13,8 @@ spec:
     spec:
       containers:
       - name: kora-backend
-        image: kora-backend:latest
+        image: nathandev/kora-backend:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
         env:
