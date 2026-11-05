@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_USER = 'your-dockerhub-username' // Change this later
+        DOCKER_HUB_USER = 'nathandev'
         DOCKER_HUB_REPO = 'kora-backend'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         KUBECONFIG = credentials('kubeconfig-credential')
@@ -18,7 +18,7 @@ pipeline {
         stage('Build Backend JAR') {
             steps {
                 dir('backend') {
-                    sh 'mvn clean package -DskipTests'
+                    bat 'mvn clean package -DskipTests'
                 }
             }
         }
@@ -26,7 +26,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 dir('backend') {
-                    sh "docker build -t ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG} ."
+                    bat "docker build -t ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG} ."
                 }
             }
         }
@@ -35,9 +35,9 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', 'docker-hub-credentials') {
-                        sh "docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG}"
-                        sh "docker tag ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG} ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:latest"
-                        sh "docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:latest"
+                        bat "docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG}"
+                        bat "docker tag ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG} ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:latest"
+                        bat "docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:latest"
                     }
                 }
             }
@@ -46,9 +46,11 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 dir('k8s') {
-                    sh "sed -i 's|kora-backend:latest|${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG}|g' backend-deployment.yaml"
-                    sh 'kubectl apply -f .'
-                    sh "kubectl rollout status deployment/kora-backend --timeout=120s"
+                    // Update the image tag using PowerShell since sed is not standard on Windows
+                    powershell "((Get-Content backend-deployment.yaml) -replace 'kora-backend:latest', '${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${IMAGE_TAG}') | Set-Content backend-deployment.yaml"
+                    
+                    bat 'kubectl apply -f .'
+                    bat "kubectl rollout status deployment/kora-backend --timeout=120s"
                 }
             }
         }
