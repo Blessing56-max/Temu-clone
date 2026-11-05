@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@paystack/inline-js':
+        specifier: ^2.26.0
+        version: 2.28.0
       '@reduxjs/toolkit':
         specifier: ^2.2.7
         version: 2.12.0(react-redux@9.3.0(@types/react@19.2.17)(react@18.3.1)(redux@5.0.1))(react@18.3.1)
@@ -299,6 +302,10 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@paystack/inline-js@2.28.0':
+    resolution: {integrity: sha512-thCnRAsVcuqzfFJSc+b7i8/7wD0scnUl1yZaJIcr90c6kGpik9nmCa4rcV+6r3S25vfkuVTzqji4bjbK5INjNQ==}
+    engines: {node: '>= 22.0.0'}
 
   '@reduxjs/toolkit@2.12.0':
     resolution: {integrity: sha512-KiT+RzZbp6mQET+Mg+h2c97+9j1sNflUxQkIHI7Yuzf6Peu+OYpmkn6nbHWmLLWj+1ZODUJFwGZ7gx3L9R9EOw==}
@@ -1135,6 +1142,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@paystack/inline-js@2.28.0': {}
 
   '@reduxjs/toolkit@2.12.0(react-redux@9.3.0(@types/react@19.2.17)(react@18.3.1)(redux@5.0.1))(react@18.3.1)':
     dependencies:
