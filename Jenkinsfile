@@ -6,8 +6,14 @@ pipeline {
         DOCKER_HUB_REPO = 'kora-backend'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         KUBECONFIG = credentials('kubeconfig-credential')
-        DOCKER_CMD = 'C:\\Users\\pc\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
-        KUBECTL_CMD = 'C:\\Users\\pc\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\kubectl.exe'
+        
+        // The exact path to your custom Docker installation
+        DOCKER_DIR = 'C:\\Users\\pc\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin'
+        DOCKER_CMD = "${DOCKER_DIR}\\docker.exe"
+        KUBECTL_CMD = "${DOCKER_DIR}\\kubectl.exe"
+        
+        // CRITICAL: Add Docker to the system PATH so the Jenkins plugin can find 'docker' for login
+        PATH = "${DOCKER_DIR};${env.PATH}"
     }
 
     stages {
